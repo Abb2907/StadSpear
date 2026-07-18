@@ -69,6 +69,13 @@ export const Route = createFileRoute("/guides/ai-stadium-incident-management")({
           mainEntityOfPage: URL,
           author: { "@type": "Organization", name: "StadSpear" },
           publisher: { "@type": "Organization", name: "StadSpear" },
+          image: {
+            "@type": "ImageObject",
+            url: HERO_IMAGE_URL,
+            width: 1200,
+            height: 630,
+            caption: HERO_IMAGE_ALT,
+          },
           about: [
             { "@type": "Thing", name: "Stadium technology" },
             { "@type": "Thing", name: "Event incident management" },
