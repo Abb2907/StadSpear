@@ -16,6 +16,11 @@ dist-ssr
 .nitro
 *.local
 
+# Environment files — real secrets live in Lovable Cloud /.env.local only
+.env
+.env.*
+!.env.example
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
