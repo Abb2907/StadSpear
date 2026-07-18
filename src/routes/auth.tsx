@@ -70,9 +70,21 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const redirect_uri = next ? `${window.location.origin}${next}` : window.location.origin;
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri });
-    if (result.error) { toast.error(result.error.message ?? "Google sign-in failed"); setLoading(false); }
+    try {
+      // redirect_uri must be a public same-origin URL, not a protected route
+      const redirect_uri = window.location.origin;
+      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri });
+      if (result.error) {
+        toast.error(result.error.message ?? "Google sign-in failed");
+      } else if (result.redirected) {
+        // browser is navigating away — leave loading state as-is
+        return;
+      }
+    } catch (err: any) {
+      toast.error(err?.message ?? "Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
