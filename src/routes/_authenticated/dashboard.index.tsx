@@ -308,7 +308,7 @@ function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(data?.fallbackByTool ?? []).map((row) => (
+                    {(data?.fallbackByTool ?? []).map((row: ToolFallbackRow) => (
                       <tr
                         key={row.tool}
                         className="border-t border-border/40 hover:bg-muted/30 cursor-pointer"
