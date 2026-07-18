@@ -134,6 +134,7 @@ export function HubShell({ threadId }: { threadId: string }) {
                 />
               </>
             )}
+            {thread && <SessionReportButton threadId={threadId} />}
             <Button size="icon" variant="ghost" aria-label="Sign out" onClick={async () => { await supabase.auth.signOut(); navigate({ to: "/" }); }}>
               <LogOut className="size-4" />
             </Button>
