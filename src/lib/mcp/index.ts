@@ -3,8 +3,8 @@ import getStadiumTelemetry from "./tools/get-stadium-telemetry";
 import getWayfindingRoute from "./tools/get-wayfinding-route";
 import getTransitOptions from "./tools/get-transit-options";
 import getSustainabilityTip from "./tools/get-sustainability-tip";
-import listMyThreads from "./tools/list-my-threads";
 import getThreadMessages from "./tools/get-thread-messages";
+import getCrowdSafetyBriefing from "./tools/get-crowd-safety-briefing";
 
 // Direct Supabase issuer — do NOT use the .lovable.cloud proxy form. Read the
 // project ref via Vite's inlined literal at build time. The fallback keeps the
