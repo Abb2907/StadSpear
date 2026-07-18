@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import guideHeroAsset from "@/assets/guide-hero.png.asset.json";
 
 const URL = "https://stadspear.lovable.app/guides/ai-stadium-incident-management";
 const TITLE = "AI-Driven Stadium Incident Management: Cutting Response Latency at Scale";
