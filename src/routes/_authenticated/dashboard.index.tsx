@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { getStadiumDashboard } from "@/lib/dashboard.functions";
 import { STADIUMS } from "@/lib/stadspear";
 import { Card } from "@/components/ui/card";
@@ -23,7 +23,7 @@ import {
   YAxis,
 } from "recharts";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
+export const Route = createFileRoute("/_authenticated/dashboard/")({
   component: DashboardPage,
   head: () => ({
     meta: [
@@ -77,6 +77,44 @@ function DashboardPage() {
   const data = q.data;
   const summary = data?.summary;
   const isEmpty = !q.isLoading && (data?.summary.totalCalls ?? 0) === 0 && (data?.summary.streamCount ?? 0) === 0;
+  const bucketMinutes = data?.bucketMinutes ?? 5;
+  const navigate = useNavigate();
+
+  const openBucket = useCallback(
+    (bucketIso: string, opts?: { tool?: string; statuses?: string[] }) => {
+      const from = new Date(bucketIso).toISOString();
+      const to = new Date(new Date(bucketIso).getTime() + bucketMinutes * 60_000).toISOString();
+      navigate({
+        to: "/dashboard/events",
+        search: {
+          from,
+          to,
+          stadium: stadium === "all" ? undefined : stadium,
+          tool: opts?.tool,
+          statuses: opts?.statuses,
+        },
+      });
+    },
+    [bucketMinutes, navigate, stadium],
+  );
+
+  const openTool = useCallback(
+    (tool: string) => {
+      const from = new Date(Date.now() - windowMin * 60_000).toISOString();
+      const to = new Date().toISOString();
+      navigate({
+        to: "/dashboard/events",
+        search: { from, to, stadium: stadium === "all" ? undefined : stadium, tool },
+      });
+    },
+    [navigate, stadium, windowMin],
+  );
+
+  const chartClick = (fn: (bucket: string) => void) => (e: any) => {
+    const label = e?.activeLabel;
+    if (typeof label === "string") fn(label);
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -176,6 +214,9 @@ function DashboardPage() {
           </Card>
         ) : (
           <>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Tip: click any chart point (or a tool row below) to drill into the underlying executions with timestamps and outcomes.
+            </p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ChartCard
                 title="Tool execution latency"
@@ -183,7 +224,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <LineChart data={data?.toolLatency ?? []}>
+                    <LineChart data={data?.toolLatency ?? []} onClick={chartClick((b) => openBucket(b))} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="bucket" tickFormatter={fmtTime} className="text-xs" />
                       <YAxis unit=" ms" className="text-xs" />
@@ -201,7 +242,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <AreaChart data={data?.toolLatency ?? []}>
+                    <AreaChart data={data?.toolLatency ?? []} onClick={chartClick((b) => openBucket(b, { statuses: ["degraded", "unavailable", "error"] }))} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="bucket" tickFormatter={fmtTime} className="text-xs" />
                       <YAxis domain={[0, 1]} tickFormatter={(v) => `${Math.round(Number(v) * 100)}%`} className="text-xs" />
@@ -231,7 +272,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <LineChart data={data?.streamDuration ?? []}>
+                    <LineChart data={data?.streamDuration ?? []} onClick={chartClick((b) => openBucket(b))} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="bucket" tickFormatter={fmtTime} className="text-xs" />
                       <YAxis unit=" ms" className="text-xs" />
@@ -249,7 +290,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <BarChart data={data?.fallbackByTool ?? []}>
+                    <BarChart data={data?.fallbackByTool ?? []} onClick={(e: any) => { const t = e?.activeLabel; if (typeof t === "string") openTool(t); }} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="tool" className="text-xs" tick={{ fontSize: 11 }} />
                       <YAxis className="text-xs" />
@@ -282,8 +323,16 @@ function DashboardPage() {
                   </thead>
                   <tbody>
                     {(data?.fallbackByTool ?? []).map((row) => (
-                      <tr key={row.tool} className="border-t border-border/40">
-                        <td className="py-2 pr-4 font-mono text-xs">{row.tool}</td>
+                      <tr
+                        key={row.tool}
+                        className="border-t border-border/40 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => openTool(row.tool)}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`View ${row.total} ${row.tool} executions`}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openTool(row.tool); } }}
+                      >
+                        <td className="py-2 pr-4 font-mono text-xs text-primary underline-offset-2 hover:underline">{row.tool}</td>
                         <td className="py-2 pr-4">{row.total}</td>
                         <td className="py-2 pr-4">{row.ok}</td>
                         <td className="py-2 pr-4">{row.degraded}</td>
