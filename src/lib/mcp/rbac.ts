@@ -9,14 +9,13 @@ export type PrivilegedRoleCheck =
 
 /**
  * Resolve the caller's authoritative role for MCP tools that expose
- * operational stadium data. Reads role from Supabase JWT claims — never
- * from tool arguments — so a fan account cannot pivot into operational
- * telemetry by relabeling itself.
+ * operational stadium data. Reads role ONLY from admin-issued
+ * `app_metadata` — never from `user_metadata`, which any signed-in user
+ * can write via `supabase.auth.updateUser({ data: { role: 'ops' } })`.
  *
  * Priority order:
- *   1. `app_metadata.role` (admin-issued, immutable by the user)
+ *   1. `app_metadata.role` (admin/service-role issued)
  *   2. `app_metadata.roles[0]`
- *   3. `user_metadata.role`
  *
  * Fails closed: any missing/unknown role returns `{ ok: false }`.
  */
@@ -26,12 +25,10 @@ export function requirePrivilegedRole(ctx: ToolContext): PrivilegedRoleCheck {
   }
   const claims = ctx.getClaims() as {
     app_metadata?: { role?: string; roles?: string[] };
-    user_metadata?: { role?: string };
   } | undefined;
   const claimed =
     claims?.app_metadata?.role ??
-    claims?.app_metadata?.roles?.[0] ??
-    claims?.user_metadata?.role;
+    claims?.app_metadata?.roles?.[0];
   if (claimed === "ops" || claimed === "volunteer") {
     return { ok: true, role: claimed };
   }
