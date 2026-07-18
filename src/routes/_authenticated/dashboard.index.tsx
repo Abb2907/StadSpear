@@ -214,6 +214,9 @@ function DashboardPage() {
           </Card>
         ) : (
           <>
+            <p className="text-xs text-muted-foreground -mt-2">
+              Tip: click any chart point (or a tool row below) to drill into the underlying executions with timestamps and outcomes.
+            </p>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <ChartCard
                 title="Tool execution latency"
