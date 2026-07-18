@@ -15,7 +15,16 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({
     next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
   }),
-  head: () => ({ meta: [{ title: "Sign in · StadSpear" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sign in · StadSpear" },
+      { name: "description", content: "Sign in or create your StadSpear account to access the FIFA 2026 operational control tower — multilingual concierge, live telemetry, and ops observability." },
+      { property: "og:title", content: "Sign in · StadSpear" },
+      { property: "og:description", content: "Access the StadSpear FIFA 2026 operational control tower." },
+      { property: "og:url", content: "https://stadspear.lovable.app/auth" },
+    ],
+    links: [{ rel: "canonical", href: "https://stadspear.lovable.app/auth" }],
+  }),
 });
 
 function AuthPage() {
