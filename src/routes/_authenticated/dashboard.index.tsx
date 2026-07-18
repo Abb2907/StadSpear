@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { useDashboardData } from "@/lib/hooks/useDashboardData";
+import type { ToolFallbackRow } from "@/lib/dashboard.functions";
 import { STADIUMS } from "@/lib/stadspear";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
