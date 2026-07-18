@@ -534,7 +534,10 @@ function ObservabilityPanel() {
   const s = q.data?.summary;
   return (
     <div className="space-y-3">
-      <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Observability (yours)</div>
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Observability (yours)</div>
+        <Link to="/dashboard" className="text-[11px] text-primary hover:underline">Live dashboard →</Link>
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <MiniStat label="Total tokens" value={s?.totalTokens ?? 0} />
         <MiniStat label="Avg stream" value={`${s?.avgStreamMs ?? 0} ms`} />
