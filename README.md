@@ -79,6 +79,9 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 
 - **Chat**: Browser `useChat` → `POST /api/chat` (AI SDK `streamText`) → tool loop → tokens streamed back as UI-message parts. Every tool call is instrumented into `tool_events` with latency + status.
 - **Fallbacks**: `chat-tools.ts` executors return `{ status, data, note }`. Telemetry tile does a read-through against `telemetry_cache` and shows the timestamp of last-known-good.
+- **Real-time**: `TelemetryPanel` subscribes to Supabase Realtime on `telemetry_cache` and jitters values server-side via `tickTelemetry` every 5s.
+- **Alerts**: `evaluateMetric` thresholds classify each metric as `ok`/`warn`/`critical`; the hub shows a summary alert banner and per-tile severity badges.
+- **Session report**: `getSessionReport` aggregates messages, tool events, gateway runs, feedback, telemetry, and alerts into a downloadable Markdown report.
 - **Observability**: `dashboard.functions.ts` aggregates `tool_events` into time-bucketed p95 / fallback / stream metrics; click a chart point → `/dashboard/events?from=…&to=…&stadium=…` opens the raw log drilldown.
 
 ---
