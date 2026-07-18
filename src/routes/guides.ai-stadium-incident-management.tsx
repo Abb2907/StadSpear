@@ -5,6 +5,33 @@ const TITLE = "AI-Driven Stadium Incident Management: Cutting Response Latency a
 const DESCRIPTION =
   "A practical guide for venue managers and ops leads on using GenAI and real-time telemetry to detect, triage, and resolve stadium incidents faster during major tournaments like FIFA World Cup 2026.";
 
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: "What is AI-driven stadium incident management?",
+    a: "AI-driven stadium incident management uses generative AI agents and real-time telemetry (crowd density, transit, CCTV analytics, weather) to detect, triage, and resolve venue incidents automatically — reducing time-to-acknowledge and time-to-resolve compared with radio-and-dashboard workflows.",
+  },
+  {
+    q: "How does GenAI reduce incident response latency?",
+    a: "A GenAI agent watches streaming telemetry continuously, correlates signals across sources, and surfaces a recommended action to the right role in the venue's language on the first token — collapsing the detect → decide → dispatch loop from minutes to seconds.",
+  },
+  {
+    q: "How is this different from traditional venue management software?",
+    a: "Traditional venue management software centralizes dashboards for humans to read. AI-driven systems add a reasoning layer with typed tools, graceful degradation, and role-scoped surfaces so volunteers and ops staff act on decisions instead of interpreting charts.",
+  },
+  {
+    q: "What happens when telemetry or routing is unavailable?",
+    a: "Each tool returns an explicit status — ok, degraded, or unavailable. Cached telemetry keeps rendering with a timestamp, and routing falls back to a best-effort walking path with a visible degraded badge, so the ops surface never goes blank during upstream outages.",
+  },
+  {
+    q: "Which metrics matter for stadium incident response?",
+    a: "Track median and p95 tool execution latency, fallback rate, AI stream duration, time-to-acknowledge, time-to-resolve, and volunteer self-serve rate. These signals turn incident review from anecdote into a live operational feedback loop.",
+  },
+  {
+    q: "Is this suitable for FIFA World Cup 2026 venues?",
+    a: "Yes. The architecture is designed for 80,000-seat venues with multilingual crowds and mixed volunteer and ops staff — the same profile as FIFA World Cup 2026 host stadiums — and the patterns generalize to any large-venue event.",
+  },
+];
+
 export const Route = createFileRoute("/guides/ai-stadium-incident-management")({
   component: GuidePage,
   head: () => ({
