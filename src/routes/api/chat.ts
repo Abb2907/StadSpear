@@ -4,13 +4,15 @@ import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
 import * as chatTools from "@/lib/chat-tools";
 
-type ChatBody = {
-  messages?: UIMessage[];
-  threadId?: string;
-  role?: "fan" | "volunteer" | "ops";
-  stadium?: string;
-  language?: string;
-};
+// Strict input schema — guards the system prompt against LLM injection via
+// role/stadium/language field smuggling and caps request size.
+const BodySchema = z.object({
+  messages: z.array(z.any()).min(1).max(200),
+  threadId: z.string().uuid().optional(),
+  role: z.enum(["fan", "volunteer", "ops"]).default("fan"),
+  stadium: z.string().min(1).max(64).default("MetLife"),
+  language: z.enum(["en", "es", "fr", "pt", "ar", "ja", "hi", "de"]).default("en"),
+});
 
 const LANGS: Record<string, string> = {
   en: "English", es: "Spanish", fr: "French", pt: "Portuguese",
@@ -23,37 +25,43 @@ const ROLE_BRIEFS: Record<string, string> = {
   ops: "The user is OPS STAFF at the command post. Return operational intelligence: crowd density, choke-points, transit ETAs, incident recommendations. Be decisive and quantitative.",
 };
 
-export const Route = createFileRoute("/api/chat")({
-  server: {
-    handlers: {
-      POST: async ({ request }) => {
-        let body: ChatBody;
-        try { body = (await request.json()) as ChatBody; }
-        catch { return new Response("Invalid JSON", { status: 400 }); }
+// Roles authorized to invoke privileged operational telemetry tools.
+const PRIVILEGED_TOOLS = new Set(["getStadiumTelemetry", "getCrowdSafetyBriefing"]);
+const PRIVILEGED_ROLES = new Set(["volunteer", "ops"]);
 
-        if (!Array.isArray(body.messages) || body.messages.length === 0) {
-          return new Response("messages required", { status: 400 });
-        }
+// Strip control chars, quotes and prompt-injection markers from short scalar
+// fields we splice into the system prompt.
+function sanitizeScalar(s: string, max = 64) {
+  return s
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .replace(/["`\\]/g, "")
+    .replace(/\{\{|\}\}/g, "")
+    .replace(/<\|.*?\|>/g, "")
+    .slice(0, max);
+}
 
-        const key = process.env.LOVABLE_API_KEY;
-        if (!key) return new Response("Missing LOVABLE_API_KEY", { status: 500 });
+// Verify the caller's authoritative role from Supabase JWT user_metadata.
+// Falls back to "fan" (least privilege) on any failure — never trusts client-declared role for privileged tools.
+async function resolveAuthoritativeRole(bearer: string | null): Promise<"fan" | "volunteer" | "ops"> {
+  const supaUrl = process.env.SUPABASE_URL;
+  const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+  if (!bearer || !supaUrl || !supaKey) return "fan";
+  try {
+    const res = await fetch(`${supaUrl}/auth/v1/user`, {
+      headers: { apikey: supaKey, Authorization: bearer },
+    });
+    if (!res.ok) return "fan";
+    const user = (await res.json()) as { user_metadata?: { role?: string }; app_metadata?: { role?: string; roles?: string[] } };
+    const claimed =
+      user.app_metadata?.role ??
+      user.app_metadata?.roles?.[0] ??
+      user.user_metadata?.role;
+    return claimed === "ops" || claimed === "volunteer" ? claimed : "fan";
+  } catch {
+    return "fan";
+  }
+}
 
-        const role = body.role ?? "fan";
-        const stadium = body.stadium ?? "MetLife";
-        const language = body.language ?? "en";
-        const langName = LANGS[language] ?? "English";
-
-        const system = [
-          "You are StadSpear, the AI concierge inside the FIFA World Cup 2026 operational control tower.",
-          `Answer in ${langName} unless the user explicitly writes in another language — then match theirs.`,
-          `Current stadium context: ${stadium}.`,
-          ROLE_BRIEFS[role],
-          "Rules:",
-          "- Use the provided tools to fetch live data when relevant (wayfinding, telemetry, transit, sustainability, crowd-safety).",
-          "- If a tool returns { degraded: true } or { status: 'unavailable' }, tell the user briefly that live data is temporarily unavailable and offer the best-effort fallback the tool returned.",
-          "- Never invent gate numbers, wait times, or transit ETAs. Prefer tool output.",
-          "- Format important operational data as short bullet points. Avoid walls of text.",
-        ].join("\n");
 
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-2.5-flash");
