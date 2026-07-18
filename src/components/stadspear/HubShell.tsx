@@ -111,6 +111,7 @@ export function HubShell({ threadId }: { threadId: string }) {
             </SheetContent>
           </Sheet>
 
+          <h1 className="sr-only">StadSpear Operational Control Tower</h1>
           <div className="flex items-center gap-2">
             <div className="pulse-dot size-2 rounded-full bg-primary" aria-hidden />
             <span className="text-xs uppercase tracking-widest text-muted-foreground">Live · FIFA 2026</span>
@@ -342,7 +343,7 @@ function ChatPane({
           {isLoading ? (
             <Button type="button" variant="outline" onClick={() => stop()}>Stop</Button>
           ) : (
-            <Button type="submit" disabled={!input.trim()}><Send className="size-4" /></Button>
+            <Button type="submit" aria-label="Send message" disabled={!input.trim()}><Send className="size-4" /></Button>
           )}
         </form>
         <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] text-muted-foreground">

@@ -5,6 +5,17 @@ import { createThread, listThreads } from "@/lib/threads.functions";
 
 export const Route = createFileRoute("/_authenticated/hub/")({
   component: HubIndex,
+  head: () => ({
+    meta: [
+      { title: "Hub · StadSpear Control Tower" },
+      { name: "description", content: "Your StadSpear operational hub — multilingual AI concierge threads, live stadium telemetry, and real-time ops decision support." },
+      { property: "og:title", content: "Hub · StadSpear Control Tower" },
+      { property: "og:description", content: "Multilingual AI concierge threads and live stadium telemetry for FIFA 2026." },
+      { property: "og:url", content: "https://stadspear.lovable.app/hub" },
+      { name: "robots", content: "noindex" },
+    ],
+    links: [{ rel: "canonical", href: "https://stadspear.lovable.app/hub" }],
+  }),
 });
 
 function HubIndex() {
