@@ -111,6 +111,7 @@ export function HubShell({ threadId }: { threadId: string }) {
             </SheetContent>
           </Sheet>
 
+          <h1 className="sr-only">StadSpear Operational Control Tower</h1>
           <div className="flex items-center gap-2">
             <div className="pulse-dot size-2 rounded-full bg-primary" aria-hidden />
             <span className="text-xs uppercase tracking-widest text-muted-foreground">Live · FIFA 2026</span>
