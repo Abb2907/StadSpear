@@ -54,23 +54,10 @@ function fmtTime(iso: string) {
 }
 
 function DashboardPage() {
-  const dashFn = useServerFn(getStadiumDashboard);
   const [stadium, setStadium] = useState<string>("all");
   const [windowMin, setWindowMin] = useState<number>(60);
 
-  const q = useQuery({
-    queryKey: ["dashboard", stadium, windowMin],
-    queryFn: () =>
-      dashFn({
-        data: {
-          stadium: stadium === "all" ? undefined : stadium,
-          sinceMinutes: windowMin,
-          bucketMinutes: windowMin >= 240 ? 15 : windowMin >= 60 ? 5 : 1,
-        },
-      }),
-    refetchInterval: 15_000,
-    staleTime: 10_000,
-  });
+  const q = useDashboardData(stadium, windowMin);
 
   const data = q.data;
   const summary = data?.summary;
