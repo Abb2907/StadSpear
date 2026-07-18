@@ -251,7 +251,7 @@ function GuidePage() {
           <p>
             <Link to="/" className="text-primary underline underline-offset-4">See the control tower</Link>
             {" · "}
-            <Link to="/auth" className="text-primary underline underline-offset-4">Sign in to try it</Link>
+            <Link to="/auth" search={{ next: "" }} className="text-primary underline underline-offset-4">Sign in to try it</Link>
           </p>
         </section>
       </article>
