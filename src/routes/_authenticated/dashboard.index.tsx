@@ -77,6 +77,44 @@ function DashboardPage() {
   const data = q.data;
   const summary = data?.summary;
   const isEmpty = !q.isLoading && (data?.summary.totalCalls ?? 0) === 0 && (data?.summary.streamCount ?? 0) === 0;
+  const bucketMinutes = data?.bucketMinutes ?? 5;
+  const navigate = useNavigate();
+
+  const openBucket = useCallback(
+    (bucketIso: string, opts?: { tool?: string; statuses?: string[] }) => {
+      const from = new Date(bucketIso).toISOString();
+      const to = new Date(new Date(bucketIso).getTime() + bucketMinutes * 60_000).toISOString();
+      navigate({
+        to: "/dashboard/events",
+        search: {
+          from,
+          to,
+          stadium: stadium === "all" ? undefined : stadium,
+          tool: opts?.tool,
+          statuses: opts?.statuses,
+        },
+      });
+    },
+    [bucketMinutes, navigate, stadium],
+  );
+
+  const openTool = useCallback(
+    (tool: string) => {
+      const from = new Date(Date.now() - windowMin * 60_000).toISOString();
+      const to = new Date().toISOString();
+      navigate({
+        to: "/dashboard/events",
+        search: { from, to, stadium: stadium === "all" ? undefined : stadium, tool },
+      });
+    },
+    [navigate, stadium, windowMin],
+  );
+
+  const chartClick = (fn: (bucket: string) => void) => (e: any) => {
+    const label = e?.activeLabel;
+    if (typeof label === "string") fn(label);
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
