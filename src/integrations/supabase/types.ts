@@ -14,7 +14,233 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ai_gateway_runs: {
+        Row: {
+          completion_tokens: number | null
+          created_at: string
+          finish_reason: string | null
+          id: string
+          model: string
+          prompt_tokens: number | null
+          status: string
+          stream_duration_ms: number | null
+          thread_id: string | null
+          total_tokens: number | null
+          user_id: string
+        }
+        Insert: {
+          completion_tokens?: number | null
+          created_at?: string
+          finish_reason?: string | null
+          id?: string
+          model: string
+          prompt_tokens?: number | null
+          status?: string
+          stream_duration_ms?: number | null
+          thread_id?: string | null
+          total_tokens?: number | null
+          user_id: string
+        }
+        Update: {
+          completion_tokens?: number | null
+          created_at?: string
+          finish_reason?: string | null
+          id?: string
+          model?: string
+          prompt_tokens?: number | null
+          status?: string
+          stream_duration_ms?: number | null
+          thread_id?: string | null
+          total_tokens?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_gateway_runs_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback: {
+        Row: {
+          created_at: string
+          id: string
+          message_id: string | null
+          rating: string
+          reason: string | null
+          thread_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          rating: string
+          reason?: string | null
+          thread_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          rating?: string
+          reason?: string | null
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+          thread_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parts: Json
+          role: string
+          thread_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      telemetry_cache: {
+        Row: {
+          generated_at: string
+          id: string
+          metric: string
+          stadium: string
+          value: Json
+        }
+        Insert: {
+          generated_at?: string
+          id?: string
+          metric: string
+          stadium: string
+          value: Json
+        }
+        Update: {
+          generated_at?: string
+          id?: string
+          metric?: string
+          stadium?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      threads: {
+        Row: {
+          created_at: string
+          favorite: boolean
+          id: string
+          language: string
+          last_viewed_at: string
+          match: string | null
+          role: string
+          stadium: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          language?: string
+          last_viewed_at?: string
+          match?: string | null
+          role?: string
+          stadium?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favorite?: boolean
+          id?: string
+          language?: string
+          last_viewed_at?: string
+          match?: string | null
+          role?: string
+          stadium?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tool_events: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          latency_ms: number | null
+          status: string
+          thread_id: string | null
+          tool_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          status: string
+          thread_id?: string | null
+          tool_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          status?: string
+          thread_id?: string | null
+          tool_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_events_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
