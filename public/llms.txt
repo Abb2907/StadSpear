@@ -1,0 +1,13 @@
+# StadSpear
+
+> An AI-powered operational control tower for the FIFA World Cup 2026 — helping fans, volunteers, and stadium staff navigate venues, manage crowds, and get real-time multilingual assistance.
+
+StadSpear is a GenAI-enabled stadium operations hub. It combines a multilingual AI concierge chat, live telemetry tiles, wayfinding, transit and sustainability guidance, threaded conversation history, and observability dashboards for venue staff.
+
+## Pages
+
+- [Home](/): Overview of StadSpear's capabilities for fans, volunteers, and operations staff during FIFA World Cup 2026.
+
+## Optional
+
+- [Authentication](/auth): Sign-in page for Google and email-based access to the hub and dashboard.
