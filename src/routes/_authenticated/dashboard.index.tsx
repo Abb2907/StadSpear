@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { getStadiumDashboard } from "@/lib/dashboard.functions";
 import { STADIUMS } from "@/lib/stadspear";
 import { Card } from "@/components/ui/card";
