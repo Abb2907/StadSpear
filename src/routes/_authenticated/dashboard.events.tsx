@@ -75,8 +75,56 @@ function EventsDrilldown() {
   const data = q.data;
   const s = data?.summary;
 
+  const [query, setQuery] = useState("");
+  const [toolFilter, setToolFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<Set<StatusKey>>(new Set());
+
+  const toolOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const g of data?.groups ?? []) for (const ev of g.events) set.add(ev.tool_name);
+    return Array.from(set).sort();
+  }, [data]);
+
+  const filteredGroups = useMemo(() => {
+    const groups = data?.groups ?? [];
+    const q = query.trim().toLowerCase();
+    return groups
+      .map((g) => ({
+        ...g,
+        events: g.events.filter((ev) => {
+          if (toolFilter && ev.tool_name !== toolFilter) return false;
+          if (statusFilter.size && !statusFilter.has(ev.status as StatusKey)) return false;
+          if (q && !(ev.error_message ?? "").toLowerCase().includes(q)) return false;
+          return true;
+        }),
+      }))
+      .filter((g) => g.events.length > 0);
+  }, [data, query, toolFilter, statusFilter]);
+
+  const filteredCount = useMemo(
+    () => filteredGroups.reduce((n, g) => n + g.events.length, 0),
+    [filteredGroups],
+  );
+
+  const totalCount = useMemo(
+    () => (data?.groups ?? []).reduce((n, g) => n + g.events.length, 0),
+    [data],
+  );
+
+  const toggleStatus = (k: StatusKey) => {
+    setStatusFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(k)) next.delete(k);
+      else next.add(k);
+      return next;
+    });
+  };
+
+  const hasClientFilter = query.length > 0 || toolFilter.length > 0 || statusFilter.size > 0;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+
       <header className="border-b border-border/60 bg-card/40 backdrop-blur sticky top-0 z-10">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-3 min-w-0">
