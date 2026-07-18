@@ -40,10 +40,10 @@ describe("MCP RBAC — requirePrivilegedRole", () => {
     expect(res).toEqual({ ok: true, role: "volunteer" });
   });
 
-  it("accepts role from user_metadata as last-resort fallback", () => {
+  it("rejects user_metadata role (prevents self-elevation)", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const res = requirePrivilegedRole(ctx({ user_metadata: { role: "volunteer" } }) as any);
-    expect(res.ok).toBe(true);
+    expect(res.ok).toBe(false);
   });
 
   it("prefers app_metadata over user_metadata (fan cannot self-elevate)", () => {
