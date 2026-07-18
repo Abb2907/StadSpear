@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHubIndexRouteImport } from './routes/_authenticated/hub.index'
 import { Route as AuthenticatedHubThreadIdRouteImport } from './routes/_authenticated/hub.$threadId'
 
@@ -35,6 +36,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHubIndexRoute = AuthenticatedHubIndexRouteImport.update({
   id: '/hub/',
   path: '/hub/',
@@ -50,6 +56,7 @@ const AuthenticatedHubThreadIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/api/chat': typeof ApiChatRoute
   '/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
   '/hub/': typeof AuthenticatedHubIndexRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/api/chat': typeof ApiChatRoute
   '/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
   '/hub': typeof AuthenticatedHubIndexRoute
@@ -66,20 +74,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/api/chat': typeof ApiChatRoute
   '/_authenticated/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
   '/_authenticated/hub/': typeof AuthenticatedHubIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/api/chat' | '/hub/$threadId' | '/hub/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/hub/$threadId'
+    | '/hub/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/api/chat' | '/hub/$threadId' | '/hub'
+  to: '/' | '/auth' | '/dashboard' | '/api/chat' | '/hub/$threadId' | '/hub'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/dashboard'
     | '/api/chat'
     | '/_authenticated/hub/$threadId'
     | '/_authenticated/hub/'
@@ -122,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hub/': {
       id: '/_authenticated/hub/'
       path: '/hub'
@@ -140,11 +163,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedHubThreadIdRoute: typeof AuthenticatedHubThreadIdRoute
   AuthenticatedHubIndexRoute: typeof AuthenticatedHubIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedHubThreadIdRoute: AuthenticatedHubThreadIdRoute,
   AuthenticatedHubIndexRoute: AuthenticatedHubIndexRoute,
 }
