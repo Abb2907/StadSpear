@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://lixwsxbvblncpivipupx.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "stadspear-mcp",
+      "version": "0.1.0",
+      "title": "StadSpear · FIFA 2026 Ops Concierge"
+    },
+    "tools": [
+      {
+        "name": "get_stadium_telemetry",
+        "title": "Get stadium telemetry",
+        "description": "Return the latest cached telemetry (crowd density, gate wait times, transit ETA, ADA restroom availability, sustainability score) for a FIFA 2026 host stadium. Falls back to best-effort static values when live telemetry is unavailable.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "stadium": {
+              "type": "string",
+              "description": "Stadium identifier, e.g. MetLife, SoFi, Azteca, Lumen."
+            }
+          },
+          "required": [
+            "stadium"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_wayfinding_route",
+        "title": "Get in-stadium walking route",
+        "description": "Compute a step-by-step walking route inside the stadium between two landmarks (gates, sections, amenities). Marks the route as degraded with a best-effort guide when the live routing service is unavailable.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "Origin, e.g. 'Gate A', 'Section 112', 'Main entrance'."
+            },
+            "to": {
+              "type": "string",
+              "description": "Destination, e.g. 'Section 218', 'ADA restroom', 'Team store'."
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_transit_options",
+        "title": "Get transit options",
+        "description": "Return public transit and shuttle options departing near the stadium toward a given destination, including next-departure ETA and accessibility.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "stadium": {
+              "type": "string",
+              "description": "Stadium identifier, e.g. MetLife, SoFi, Azteca."
+            },
+            "toward": {
+              "type": "string",
+              "description": "Destination area or neighborhood, e.g. 'Downtown', 'Airport'."
+            }
+          },
+          "required": [
+            "stadium",
+            "toward"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_sustainability_tip",
+        "title": "Get sustainability tip",
+        "description": "Return an actionable, stadium-specific sustainability tip (recycling, hydration stations, low-impact transit).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "stadium": {
+              "type": "string",
+              "description": "Stadium identifier, e.g. MetLife, SoFi, Azteca."
+            }
+          },
+          "required": [
+            "stadium"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_threads",
+        "title": "List my StadSpear threads",
+        "description": "List the signed-in user's StadSpear concierge conversations, newest first. Returns thread id, title, stadium, match, role, language, favorite flag, and last viewed timestamp.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "description": "Max threads to return (1-100). Defaults to 20 if omitted or out of range."
+            },
+            "favoriteOnly": {
+              "type": "boolean",
+              "description": "If true, only return threads the user has marked as favorite."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_thread_messages",
+        "title": "Get messages in a thread",
+        "description": "Return the messages of one of the signed-in user's StadSpear threads, oldest first. RLS enforces that only threads owned by the caller are readable.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "threadId": {
+              "type": "string",
+              "description": "UUID of the thread to read."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max messages to return (1-200). Defaults to 50."
+            }
+          },
+          "required": [
+            "threadId"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
