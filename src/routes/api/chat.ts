@@ -208,7 +208,7 @@ export const Route = createFileRoute("/api/chat")({
         const result = streamText({
           model,
           system,
-          messages: await convertToModelMessages(body.messages),
+          messages: await convertToModelMessages(body.messages as UIMessage[]),
           tools,
           stopWhen: stepCountIs(50),
           onFinish: async ({ usage, finishReason }) => {
