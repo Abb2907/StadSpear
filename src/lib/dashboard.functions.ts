@@ -180,9 +180,15 @@ export const getStadiumDashboard = createServerFn({ method: "POST" })
       });
 
     const totalCalls = tools.length;
-    const totalFallback = tools.filter((t: any) => t.status !== "ok").length;
-    const allLatencies = tools.map((t: any) => t.latency_ms).filter((n: any) => typeof n === "number").sort((a: number, b: number) => a - b);
-    const allStreams = runs.map((r: any) => r.stream_duration_ms).filter((n: any) => typeof n === "number").sort((a: number, b: number) => a - b);
+    const totalFallback = tools.filter((t) => t.status !== "ok").length;
+    const allLatencies = tools
+      .map((t) => t.latency_ms)
+      .filter((n): n is number => typeof n === "number")
+      .sort((a, b) => a - b);
+    const allStreams = runs
+      .map((r) => r.stream_duration_ms)
+      .filter((n): n is number => typeof n === "number")
+      .sort((a, b) => a - b);
     const summary = {
       totalCalls,
       totalFallback,
