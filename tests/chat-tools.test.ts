@@ -54,12 +54,19 @@ describe("getStadiumTelemetry", () => {
   });
 
   it("returns unavailable when env vars are missing", async () => {
-    const res = await getStadiumTelemetry("MetLife", {
-      supabaseUrl: undefined,
-      supabaseKey: undefined,
-      fetchFn: mockFetch({ ok: true, body: [] }),
-    });
-    expect(res.status).toBe("unavailable");
+    const prevUrl = process.env.SUPABASE_URL;
+    const prevKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+    delete process.env.SUPABASE_URL;
+    delete process.env.SUPABASE_PUBLISHABLE_KEY;
+    try {
+      const res = await getStadiumTelemetry("MetLife", {
+        fetchFn: mockFetch({ ok: true, body: [] }),
+      });
+      expect(res.status).toBe("unavailable");
+    } finally {
+      if (prevUrl !== undefined) process.env.SUPABASE_URL = prevUrl;
+      if (prevKey !== undefined) process.env.SUPABASE_PUBLISHABLE_KEY = prevKey;
+    }
   });
 });
 
