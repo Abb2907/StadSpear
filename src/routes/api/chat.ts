@@ -141,8 +141,16 @@ export const Route = createFileRoute("/api/chat")({
         const instrument = <TArgs, TResult extends { status?: string; note?: string; error?: string }>(
           toolName: string,
           fn: (args: TArgs) => Promise<TResult> | TResult,
-        ) => async (args: TArgs): Promise<TResult> => {
+        ) => async (args: TArgs): Promise<TResult | { status: "forbidden"; note: string }> => {
           const t0 = Date.now();
+          // RBAC: refuse privileged operational tools for unprivileged callers.
+          if (PRIVILEGED_TOOLS.has(toolName) && !PRIVILEGED_ROLES.has(authRole)) {
+            void logTool(toolName, t0, "forbidden", `role=${authRole}`);
+            return {
+              status: "forbidden" as const,
+              note: "This operational tool is restricted to authorized volunteer or ops accounts.",
+            };
+          }
           try {
             const out = await fn(args);
             const status = (out?.status as string) ?? "ok";
@@ -154,6 +162,7 @@ export const Route = createFileRoute("/api/chat")({
             throw e;
           }
         };
+
 
         const tools = {
           getStadiumTelemetry: tool({
