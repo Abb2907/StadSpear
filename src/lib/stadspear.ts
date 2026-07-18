@@ -44,33 +44,33 @@ export function evaluateMetric(
     const n = typeof raw === "number" ? raw : Number(raw);
     return Number.isFinite(n) ? n : fallback;
   };
-  if (!value || typeof value !== "object") return { severity: "ok" };
+  if (!v) return { severity: "ok" };
   switch (metric) {
     case "gate_wait": {
-      const m = Number(value.minutes ?? 0);
+      const m = num("minutes", 0);
       if (m >= 25) return { severity: "critical", note: `Gate wait ${m} min — open overflow lanes` };
       if (m >= 15) return { severity: "warn", note: `Gate wait ${m} min — monitor` };
       return { severity: "ok" };
     }
     case "concourse_density": {
-      const p = Number(value.percent ?? 0);
+      const p = num("percent", 0);
       if (p >= 85) return { severity: "critical", note: `Concourse ${p}% — reroute egress` };
       if (p >= 70) return { severity: "warn", note: `Concourse ${p}% — warn stewards` };
       return { severity: "ok" };
     }
     case "transit_eta": {
-      const m = Number(value.minutes ?? 0);
+      const m = num("minutes", 0);
       if (m >= 20) return { severity: "warn", note: `Transit ${m} min — publish shuttle info` };
       return { severity: "ok" };
     }
     case "ada_restrooms": {
-      const a = Number(value.available ?? 99);
+      const a = num("available", 99);
       if (a <= 1) return { severity: "critical", note: `Only ${a} ADA restroom open` };
       if (a <= 3) return { severity: "warn", note: `${a} ADA restrooms open` };
       return { severity: "ok" };
     }
     case "eco_points": {
-      const s = Number(value.score ?? 100);
+      const s = num("score", 100);
       if (s < 40) return { severity: "critical", note: `Sustainability ${s}/100` };
       if (s < 60) return { severity: "warn", note: `Sustainability ${s}/100` };
       return { severity: "ok" };
