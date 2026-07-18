@@ -34,7 +34,16 @@ export const DEFAULT_MODEL = "google/gemini-2.5-flash";
 // Severity: "ok" | "warn" | "critical"
 export type Severity = "ok" | "warn" | "critical";
 
-export function evaluateMetric(metric: string, value: any): { severity: Severity; note?: string } {
+export function evaluateMetric(
+  metric: string,
+  value: unknown,
+): { severity: Severity; note?: string } {
+  const v = (value && typeof value === "object" ? (value as Record<string, unknown>) : null);
+  const num = (key: string, fallback: number) => {
+    const raw = v?.[key];
+    const n = typeof raw === "number" ? raw : Number(raw);
+    return Number.isFinite(n) ? n : fallback;
+  };
   if (!value || typeof value !== "object") return { severity: "ok" };
   switch (metric) {
     case "gate_wait": {
