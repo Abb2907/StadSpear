@@ -463,11 +463,37 @@ function ToolPill({ part }: { part: any }) {
 
 function TelemetryPanel({ stadium }: { stadium: string }) {
   const fn = useServerFn(getTelemetry);
+  const tickFn = useServerFn(tickTelemetry);
+  const qc = useQueryClient();
   const q = useQuery({
     queryKey: ["telemetry", stadium],
     queryFn: () => fn({ data: { stadium } }),
     refetchInterval: 30_000,
   });
+
+  // Realtime: refetch when telemetry_cache rows for this stadium change.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`telemetry:${stadium}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "telemetry_cache", filter: `stadium=eq.${stadium}` },
+        () => qc.invalidateQueries({ queryKey: ["telemetry", stadium] }),
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [stadium, qc]);
+
+  // Simulated live drift: tick the server every 5s so subscribers see fresh values.
+  const [streaming, setStreaming] = useState(true);
+  useEffect(() => {
+    if (!streaming) return;
+    let cancelled = false;
+    const tick = () => tickFn({ data: { stadium } }).catch(() => {});
+    tick();
+    const id = setInterval(() => { if (!cancelled) tick(); }, 5000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [stadium, streaming, tickFn]);
 
   const metrics = q.data?.metrics ?? [];
   const fetchedAt = q.data?.fetched_at;
@@ -480,6 +506,12 @@ function TelemetryPanel({ stadium }: { stadium: string }) {
     ada_restrooms: "ADA restrooms", eco_points: "Sustainability score",
   };
 
+  const alerts = metrics
+    .map((m: any) => ({ metric: m.metric, ...evaluateMetric(m.metric, m.value) }))
+    .filter((a: any) => a.severity !== "ok") as Array<{ metric: string; severity: Severity; note?: string }>;
+  const critical = alerts.filter(a => a.severity === "critical").length;
+  const warn = alerts.filter(a => a.severity === "warn").length;
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -487,10 +519,30 @@ function TelemetryPanel({ stadium }: { stadium: string }) {
           <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Live telemetry</div>
           <div className="text-sm font-medium">{stadium}</div>
         </div>
-        {q.isFetching ? <Loader2 className="size-3 animate-spin text-muted-foreground" /> : (
-          <span className="pulse-dot size-2 rounded-full bg-primary" aria-hidden />
-        )}
+        <button
+          onClick={() => setStreaming(s => !s)}
+          aria-label={streaming ? "Pause live stream" : "Resume live stream"}
+          className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-1 text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+        >
+          <span className={"size-1.5 rounded-full " + (streaming ? "bg-primary pulse-dot" : "bg-muted-foreground")} aria-hidden />
+          {streaming ? "Streaming" : "Paused"}
+        </button>
       </div>
+
+      {(critical > 0 || warn > 0) && (
+        <div className={"flex items-start gap-2 rounded-md border p-2 text-xs " + (critical > 0 ? "border-destructive/40 bg-destructive/10 text-destructive" : "border-warn/40 bg-warn/10 text-warn")}>
+          <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+          <div>
+            <div className="font-semibold">
+              {critical > 0 ? `${critical} critical` : ""}{critical > 0 && warn > 0 ? " · " : ""}{warn > 0 ? `${warn} warning` : ""}
+            </div>
+            <ul className="mt-0.5 space-y-0.5">
+              {alerts.slice(0, 3).map(a => <li key={a.metric}>{a.note ?? a.metric}</li>)}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {q.data?.degraded && (
         <div className="rounded-md border border-warn/40 bg-warn/10 p-2 text-xs text-warn">
           Sensors unavailable — showing best-effort defaults.
@@ -502,23 +554,108 @@ function TelemetryPanel({ stadium }: { stadium: string }) {
         )}
         {metrics.map((m: any) => {
           const Icon = iconFor[m.metric] ?? Radio;
+          const { severity, note } = evaluateMetric(m.metric, m.value);
+          const toneBorder =
+            severity === "critical" ? "border-destructive/50" :
+            severity === "warn" ? "border-warn/50" : "border-border";
+          const toneDot =
+            severity === "critical" ? "bg-destructive" :
+            severity === "warn" ? "bg-warn" : "bg-primary";
           return (
-            <Card key={m.metric} className="border-border bg-surface p-3">
+            <Card key={m.metric} className={"bg-surface p-3 transition " + toneBorder}>
               <div className="flex items-center gap-2">
                 <Icon className="size-4 text-primary" />
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">{labelFor[m.metric] ?? m.metric}</div>
+                <span className={"ml-auto size-1.5 rounded-full " + toneDot} aria-label={severity} />
               </div>
-              <div className="mt-1 text-sm font-medium">{formatMetric(m.value)}</div>
-              <div className="mt-1 text-[10px] text-muted-foreground">as of {new Date(m.generated_at).toLocaleTimeString()}</div>
+              <div className="mt-1 text-sm font-medium tabular-nums">{formatMetric(m.value)}</div>
+              <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                <span>as of {new Date(m.generated_at).toLocaleTimeString()}</span>
+                {severity !== "ok" && note && <span className={severity === "critical" ? "text-destructive" : "text-warn"}>{note}</span>}
+              </div>
             </Card>
           );
         })}
       </div>
       {fetchedAt && (
-        <p className="text-[10px] text-muted-foreground">Auto-refreshing every 30 s. Cached values shown when live services drop.</p>
+        <p className="text-[10px] text-muted-foreground">Live via Realtime · thresholds evaluated per metric.</p>
       )}
     </div>
   );
+}
+
+function SessionReportButton({ threadId }: { threadId: string }) {
+  const reportFn = useServerFn(getSessionReport);
+  const [busy, setBusy] = useState(false);
+  async function run() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const r = await reportFn({ data: { threadId } });
+      const md = renderReportMarkdown(r);
+      const blob = new Blob([md], { type: "text/markdown" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const safeTitle = (r.thread.title || "session").replace(/[^a-z0-9-_]+/gi, "-").slice(0, 40);
+      a.href = url;
+      a.download = `stadspear-${safeTitle}-${new Date().toISOString().slice(0, 10)}.md`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Session report downloaded");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Report failed");
+    } finally { setBusy(false); }
+  }
+  return (
+    <Button size="sm" variant="outline" onClick={run} disabled={busy} aria-label="Download session report">
+      {busy ? <Loader2 className="size-3.5 animate-spin" /> : <FileText className="size-3.5" />}
+      <span className="ml-1 hidden sm:inline">Report</span>
+    </Button>
+  );
+}
+
+function renderReportMarkdown(r: any): string {
+  const t = r.thread;
+  const lines: string[] = [];
+  lines.push(`# StadSpear session report`);
+  lines.push(``);
+  lines.push(`- **Thread:** ${t.title}`);
+  lines.push(`- **Role:** ${t.role}  ·  **Stadium:** ${t.stadium ?? "—"}  ·  **Language:** ${t.language}`);
+  lines.push(`- **Created:** ${new Date(t.created_at).toLocaleString()}`);
+  lines.push(`- **Generated:** ${new Date(r.generatedAt).toLocaleString()}`);
+  lines.push(``);
+  lines.push(`## Summary`);
+  lines.push(`- Messages: **${r.counts.messages}** (user ${r.counts.userMessages} · assistant ${r.counts.assistantMessages})`);
+  lines.push(`- Tool calls: **${r.counts.tools}**  ·  AI runs: **${r.counts.runs}**  ·  Total tokens: **${r.totalTokens}**  ·  Avg stream: **${r.avgStreamMs} ms**`);
+  lines.push(`- Feedback: 👍 ${r.counts.thumbsUp}  ·  👎 ${r.counts.thumbsDown}`);
+  lines.push(``);
+  if (Object.keys(r.toolBreakdown).length) {
+    lines.push(`## Tool breakdown`);
+    for (const [name, b] of Object.entries<any>(r.toolBreakdown)) {
+      lines.push(`- \`${name}\` — ok ${b.ok} · degraded ${b.degraded} · unavailable ${b.unavailable} · error ${b.error}`);
+    }
+    lines.push(``);
+  }
+  if (r.alerts?.length) {
+    lines.push(`## Active alerts (${t.stadium ?? ""})`);
+    for (const a of r.alerts) lines.push(`- **${a.severity.toUpperCase()}** — ${a.note ?? a.metric}`);
+    lines.push(``);
+  }
+  if (r.telemetry?.length) {
+    lines.push(`## Telemetry snapshot`);
+    for (const m of r.telemetry) lines.push(`- \`${m.metric}\`: \`${JSON.stringify(m.value)}\` @ ${new Date(m.generated_at).toLocaleTimeString()}`);
+    lines.push(``);
+  }
+  if (r.messages?.length) {
+    lines.push(`## Transcript`);
+    for (const m of r.messages) {
+      lines.push(`**${m.role}** _(${new Date(m.created_at).toLocaleTimeString()})_`);
+      lines.push(``);
+      lines.push(m.text || "_(no text)_");
+      lines.push(``);
+    }
+  }
+  return lines.join("\n");
 }
 
 function formatMetric(v: any): string {
