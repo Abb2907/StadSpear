@@ -287,7 +287,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <BarChart data={data?.fallbackByTool ?? []}>
+                    <BarChart data={data?.fallbackByTool ?? []} onClick={(e: any) => { const t = e?.activeLabel; if (typeof t === "string") openTool(t); }} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="tool" className="text-xs" tick={{ fontSize: 11 }} />
                       <YAxis className="text-xs" />
