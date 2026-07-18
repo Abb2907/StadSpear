@@ -143,9 +143,6 @@ export const Route = createFileRoute("/api/chat")({
           stopWhen: stepCountIs(50),
           onFinish: async ({ usage, finishReason }) => {
             // Best-effort observability write. Requires bearer; skip if missing.
-            const bearer = request.headers.get("authorization");
-            const supaUrl = process.env.SUPABASE_URL;
-            const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY;
             if (!bearer || !supaUrl || !supaKey) return;
             try {
               await fetch(`${supaUrl}/rest/v1/ai_gateway_runs`, {
