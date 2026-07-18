@@ -38,9 +38,9 @@ interface TelemetryRow {
   value: JsonValue;
   generated_at: string;
 }
-interface TextPart {
-  type: "text";
-  text: string;
+interface MessagePart {
+  type: string;
+  text?: string;
 }
 
 /**
