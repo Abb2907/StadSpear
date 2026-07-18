@@ -132,6 +132,18 @@ export const Route = createFileRoute("/api/chat")({
             inputSchema: z.object({ stadium: z.string() }),
             execute: instrument("getSustainabilityTip", ({ stadium: s }: { stadium: string }) => chatTools.getSustainabilityTip(s)),
           }),
+          getCrowdSafetyBriefing: tool({
+            description: "Return a crowd-safety briefing for a stadium zone: density level, choke-point flag, ADA guidance, and a recommended operational action. Use this for volunteer/ops requests about crowding, safety, entry metering, or accessibility routing.",
+            inputSchema: z.object({
+              stadium: z.string().describe("Stadium id, e.g. MetLife, SoFi, Azteca"),
+              zone: z.string().describe("Zone or gate, e.g. 'Gate B', 'North concourse', 'Section 210'"),
+            }),
+            execute: instrument(
+              "getCrowdSafetyBriefing",
+              ({ stadium: s, zone }: { stadium: string; zone: string }) =>
+                chatTools.getCrowdSafetyBriefing(s, zone),
+            ),
+          }),
         };
 
         const started = Date.now();
