@@ -71,18 +71,27 @@ function AuthPage() {
   async function handleGoogle() {
     setLoading(true);
     try {
-      // redirect_uri must be a public same-origin URL, not a protected route
       const redirect_uri = window.location.origin;
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri });
-      if (result.error) {
+      const result: any = await lovable.auth.signInWithOAuth("google", { redirect_uri });
+      if (result?.error) {
         toast.error(result.error.message ?? "Google sign-in failed");
-      } else if (result.redirected) {
-        // browser is navigating away — leave loading state as-is
+        setLoading(false);
         return;
       }
+      if (result?.redirected) {
+        // browser is navigating away
+        return;
+      }
+      // Popup flow succeeded — confirm session and navigate explicitly.
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        go();
+        return;
+      }
+      toast.error("Sign-in did not complete. Please try again.");
+      setLoading(false);
     } catch (err: any) {
       toast.error(err?.message ?? "Google sign-in failed");
-    } finally {
       setLoading(false);
     }
   }
