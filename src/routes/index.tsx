@@ -61,8 +61,8 @@ function Landing() {
             <span className="hidden text-xs text-muted-foreground sm:inline">Operational Control Tower</span>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground">Sign in</Link>
-            <Button asChild size="sm"><Link to="/auth">Enter tower <ArrowRight className="ml-1 size-4" /></Link></Button>
+            <Link to="/auth" search={{ next: "" }} className="text-sm text-muted-foreground hover:text-foreground">Sign in</Link>
+            <Button asChild size="sm"><Link to="/auth" search={{ next: "" }}>Enter tower <ArrowRight className="ml-1 size-4" /></Link></Button>
           </div>
         </div>
       </header>
@@ -88,7 +88,7 @@ function Landing() {
               Multilingual concierge, live crowd telemetry, ADA routing, and decision support in real time.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button size="lg" asChild><Link to="/auth">Enter the tower <ArrowRight className="ml-1 size-4" /></Link></Button>
+              <Button size="lg" asChild><Link to="/auth" search={{ next: "" }}>Enter the tower <ArrowRight className="ml-1 size-4" /></Link></Button>
               <Button size="lg" variant="outline" asChild><a href="#capabilities">See capabilities</a></Button>
             </div>
           </div>

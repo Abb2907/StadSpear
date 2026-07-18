@@ -1,9 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import guideHeroAsset from "@/assets/guide-hero.png.asset.json";
 
 const URL = "https://stadspear.lovable.app/guides/ai-stadium-incident-management";
 const TITLE = "AI-Driven Stadium Incident Management: Cutting Response Latency at Scale";
 const DESCRIPTION =
   "A practical guide for venue managers and ops leads on using GenAI and real-time telemetry to detect, triage, and resolve stadium incidents faster during major tournaments like FIFA World Cup 2026.";
+const HERO_IMAGE_URL = `https://stadspear.lovable.app${guideHeroAsset.url}`;
+const HERO_IMAGE_ALT =
+  "Stadium operations control tower with holographic telemetry screens overseeing a live FIFA World Cup 2026 venue at night";
 
 const FAQS: { q: string; a: string }[] = [
   {
@@ -42,7 +46,14 @@ export const Route = createFileRoute("/guides/ai-stadium-incident-management")({
       { property: "og:description", content: DESCRIPTION },
       { property: "og:url", content: URL },
       { property: "og:type", content: "article" },
+      { property: "og:image", content: HERO_IMAGE_URL },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: HERO_IMAGE_ALT },
+      { property: "og:image:type", content: "image/png" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: HERO_IMAGE_URL },
+      { name: "twitter:image:alt", content: HERO_IMAGE_ALT },
       { name: "keywords", content: "stadium technology, event incident management, venue management software, stadium operations, GenAI, real-time telemetry, FIFA 2026" },
     ],
     links: [{ rel: "canonical", href: URL }],
@@ -58,6 +69,13 @@ export const Route = createFileRoute("/guides/ai-stadium-incident-management")({
           mainEntityOfPage: URL,
           author: { "@type": "Organization", name: "StadSpear" },
           publisher: { "@type": "Organization", name: "StadSpear" },
+          image: {
+            "@type": "ImageObject",
+            url: HERO_IMAGE_URL,
+            width: 1200,
+            height: 630,
+            caption: HERO_IMAGE_ALT,
+          },
           about: [
             { "@type": "Thing", name: "Stadium technology" },
             { "@type": "Thing", name: "Event incident management" },
@@ -115,6 +133,15 @@ function GuidePage() {
             incidents in seconds — not minutes — across 80,000-seat venues during the FIFA World
             Cup 2026 and other mega-events.
           </p>
+          <img
+            src={guideHeroAsset.url}
+            alt={HERO_IMAGE_ALT}
+            width={1200}
+            height={630}
+            loading="eager"
+            decoding="async"
+            className="mt-8 aspect-[1200/630] w-full rounded-xl border border-border/60 object-cover"
+          />
         </header>
 
         <section className="space-y-4">
@@ -224,7 +251,7 @@ function GuidePage() {
           <p>
             <Link to="/" className="text-primary underline underline-offset-4">See the control tower</Link>
             {" · "}
-            <Link to="/auth" className="text-primary underline underline-offset-4">Sign in to try it</Link>
+            <Link to="/auth" search={{ next: "" }} className="text-primary underline underline-offset-4">Sign in to try it</Link>
           </p>
         </section>
       </article>
