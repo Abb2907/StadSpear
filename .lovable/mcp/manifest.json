@@ -19,7 +19,7 @@
       {
         "name": "get_stadium_telemetry",
         "title": "Get stadium telemetry",
-        "description": "Return the latest cached telemetry (crowd density, gate wait times, transit ETA, ADA restroom availability, sustainability score) for a FIFA 2026 host stadium. Falls back to best-effort static values when live telemetry is unavailable.",
+        "description": "Return the latest cached telemetry (crowd density, gate wait times, transit ETA, ADA restroom availability, sustainability score) for a FIFA 2026 host stadium. Restricted to volunteer/ops accounts. Falls back to best-effort static values when live telemetry is unavailable.",
         "annotations": {
           "readOnlyHint": true,
           "idempotentHint": true,
