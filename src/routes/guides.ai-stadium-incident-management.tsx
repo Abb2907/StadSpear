@@ -5,6 +5,9 @@ const URL = "https://stadspear.lovable.app/guides/ai-stadium-incident-management
 const TITLE = "AI-Driven Stadium Incident Management: Cutting Response Latency at Scale";
 const DESCRIPTION =
   "A practical guide for venue managers and ops leads on using GenAI and real-time telemetry to detect, triage, and resolve stadium incidents faster during major tournaments like FIFA World Cup 2026.";
+const HERO_IMAGE_URL = `https://stadspear.lovable.app${guideHeroAsset.url}`;
+const HERO_IMAGE_ALT =
+  "Stadium operations control tower with holographic telemetry screens overseeing a live FIFA World Cup 2026 venue at night";
 
 const FAQS: { q: string; a: string }[] = [
   {
