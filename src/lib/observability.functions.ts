@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { summarizeObservability } from "./thread-service";
 
 export const submitFeedback = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -38,23 +39,14 @@ export const getObservabilitySummary = createServerFn({ method: "GET" })
         .select("id, tool_name, status, latency_ms, error_message, created_at")
         .order("created_at", { ascending: false })
         .limit(25),
-      context.supabase
-        .from("feedback")
-        .select("rating")
-        .limit(500),
+      context.supabase.from("feedback").select("rating").limit(500),
     ]);
     const runs = runsRes.data ?? [];
     const tools = toolsRes.data ?? [];
     const feedback = feedbackRes.data ?? [];
-    const totalTokens = runs.reduce((sum, r) => sum + (r.total_tokens ?? 0), 0);
-    const avgStream = runs.length ? Math.round(runs.reduce((s, r) => s + (r.stream_duration_ms ?? 0), 0) / runs.length) : 0;
-    const toolFail = tools.filter(t => t.status !== "ok").length;
-    const up = feedback.filter(f => f.rating === "up").length;
     return {
-      runs, tools,
-      summary: {
-        totalTokens, avgStreamMs: avgStream, toolCalls: tools.length, toolFail,
-        thumbsUp: up, thumbsDown: feedback.length - up,
-      },
+      runs,
+      tools,
+      summary: summarizeObservability(runs, tools, feedback),
     };
   });
