@@ -342,7 +342,7 @@ function ChatPane({
           {isLoading ? (
             <Button type="button" variant="outline" onClick={() => stop()}>Stop</Button>
           ) : (
-            <Button type="submit" disabled={!input.trim()}><Send className="size-4" /></Button>
+            <Button type="submit" aria-label="Send message" disabled={!input.trim()}><Send className="size-4" /></Button>
           )}
         </form>
         <p className="mx-auto mt-2 max-w-3xl text-center text-[10px] text-muted-foreground">
