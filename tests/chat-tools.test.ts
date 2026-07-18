@@ -4,6 +4,7 @@ import {
   getWayfindingRoute,
   getTransitOptions,
   getSustainabilityTip,
+  getCrowdSafetyBriefing,
 } from "@/lib/chat-tools";
 
 function mockFetch(response: { ok: boolean; status?: number; body?: unknown }) {
