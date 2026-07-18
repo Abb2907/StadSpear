@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/browser-client";
 import { createThread, deleteThread, getThread, listThreads, saveMessage, updateThread } from "@/lib/threads.functions";
 import { getTelemetry, tickTelemetry } from "@/lib/telemetry.functions";
 import { getObservabilitySummary } from "@/lib/observability.functions";
