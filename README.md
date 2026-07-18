@@ -102,7 +102,7 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 | **Database & Auth** | Lovable Cloud (Supabase Postgres) with Row-Level Security, Google OAuth + Email |
 | **Realtime** | Supabase Realtime on `telemetry_cache` |
 | **Agent Protocol** | `@lovable.dev/mcp-js` — OAuth 2.1 resource server at `/mcp` |
-| **Testing** | Vitest — 36 unit tests + 12 latency benchmarks |
+| **Testing** | Vitest — 26 unit tests + 10 latency benchmarks (36 total) |
 | **Typecheck** | `tsgo --noEmit` (strict TypeScript) |
 
 ---
