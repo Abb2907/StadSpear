@@ -1,8 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { getStadiumDashboard } from "@/lib/dashboard.functions";
+import { useDashboardData } from "@/lib/hooks/useDashboardData";
 import { STADIUMS } from "@/lib/stadspear";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
