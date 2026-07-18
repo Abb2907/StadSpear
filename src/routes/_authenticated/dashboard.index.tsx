@@ -320,8 +320,16 @@ function DashboardPage() {
                   </thead>
                   <tbody>
                     {(data?.fallbackByTool ?? []).map((row) => (
-                      <tr key={row.tool} className="border-t border-border/40">
-                        <td className="py-2 pr-4 font-mono text-xs">{row.tool}</td>
+                      <tr
+                        key={row.tool}
+                        className="border-t border-border/40 hover:bg-muted/30 cursor-pointer"
+                        onClick={() => openTool(row.tool)}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`View ${row.total} ${row.tool} executions`}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openTool(row.tool); } }}
+                      >
+                        <td className="py-2 pr-4 font-mono text-xs text-primary underline-offset-2 hover:underline">{row.tool}</td>
                         <td className="py-2 pr-4">{row.total}</td>
                         <td className="py-2 pr-4">{row.ok}</td>
                         <td className="py-2 pr-4">{row.degraded}</td>
