@@ -103,7 +103,7 @@ function Consent() {
               <span className="mt-1 size-1.5 rounded-full bg-primary" />
               <span>Read your own StadSpear threads and messages (subject to row-level security)</span>
             </li>
-            {scopes.filter((s) => !["openid", "email", "profile"].includes(s)).map((s) => (
+            {scopes.filter((s: string) => !["openid", "email", "profile"].includes(s)).map((s: string) => (
               <li key={s} className="flex items-start gap-2">
                 <span className="mt-1 size-1.5 rounded-full bg-yellow-400" />
                 <span>Additional permission requested: <code className="text-xs">{s}</code></span>
