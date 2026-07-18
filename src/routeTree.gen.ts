@@ -20,6 +20,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedHubIndexRouteImport } from './routes/_authenticated/hub.index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard.index'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as AuthenticatedHubThreadIdRouteImport } from './routes/_authenticated/hub.$threadId'
 import { Route as AuthenticatedDashboardEventsRouteImport } from './routes/_authenticated/dashboard.events'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -83,6 +84,11 @@ const AuthenticatedDashboardIndexRoute =
     path: '/dashboard/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedHubThreadIdRoute =
   AuthenticatedHubThreadIdRouteImport.update({
     id: '/hub/$threadId',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/events': typeof AuthenticatedDashboardEventsRoute
   '/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/hub/': typeof AuthenticatedHubIndexRoute
 }
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/dashboard/events': typeof AuthenticatedDashboardEventsRoute
   '/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/hub': typeof AuthenticatedHubIndexRoute
 }
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/dashboard/events': typeof AuthenticatedDashboardEventsRoute
   '/_authenticated/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/hub/': typeof AuthenticatedHubIndexRoute
 }
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/events'
     | '/hub/$threadId'
+    | '/api/public/health'
     | '/dashboard/'
     | '/hub/'
   fileRoutesByTo: FileRoutesByTo
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/dashboard/events'
     | '/hub/$threadId'
+    | '/api/public/health'
     | '/dashboard'
     | '/hub'
   id:
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/dashboard/events'
     | '/_authenticated/hub/$threadId'
+    | '/api/public/health'
     | '/_authenticated/dashboard/'
     | '/_authenticated/hub/'
   fileRoutesById: FileRoutesById
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   GuidesAiStadiumIncidentManagementRoute: typeof GuidesAiStadiumIncidentManagementRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -302,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/hub/$threadId': {
       id: '/_authenticated/hub/$threadId'
       path: '/hub/$threadId'
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
     GuidesAiStadiumIncidentManagementRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
