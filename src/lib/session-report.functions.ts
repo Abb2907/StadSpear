@@ -100,8 +100,8 @@ export const getSessionReport = createServerFn({ method: "POST" })
 
     const extractText = (parts: unknown): string => {
       if (!Array.isArray(parts)) return String(parts ?? "");
-      return (parts as TextPart[])
-        .filter((p) => p && typeof p === "object" && p.type === "text")
+      return (parts as MessagePart[])
+        .filter((p): p is MessagePart & { text: string } => !!p && typeof p === "object" && p.type === "text" && typeof p.text === "string")
         .map((p) => p.text)
         .join("\n")
         .slice(0, 4000);
