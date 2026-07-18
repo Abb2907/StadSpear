@@ -133,6 +133,15 @@ function GuidePage() {
             incidents in seconds — not minutes — across 80,000-seat venues during the FIFA World
             Cup 2026 and other mega-events.
           </p>
+          <img
+            src={guideHeroAsset.url}
+            alt={HERO_IMAGE_ALT}
+            width={1200}
+            height={630}
+            loading="eager"
+            decoding="async"
+            className="mt-8 aspect-[1200/630] w-full rounded-xl border border-border/60 object-cover"
+          />
         </header>
 
         <section className="space-y-4">
