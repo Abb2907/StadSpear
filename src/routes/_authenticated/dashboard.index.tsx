@@ -269,7 +269,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <LineChart data={data?.streamDuration ?? []}>
+                    <LineChart data={data?.streamDuration ?? []} onClick={chartClick((b) => openBucket(b))} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="bucket" tickFormatter={fmtTime} className="text-xs" />
                       <YAxis unit=" ms" className="text-xs" />
