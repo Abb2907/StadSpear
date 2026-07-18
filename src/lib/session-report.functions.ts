@@ -35,7 +35,7 @@ interface FeedbackRow {
 }
 interface TelemetryRow {
   metric: string;
-  value: unknown;
+  value: JsonValue;
   generated_at: string;
 }
 interface TextPart {
