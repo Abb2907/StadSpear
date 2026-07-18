@@ -1,12 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { getThreadEvents } from "@/lib/events.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MessageSquare, RefreshCcw } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ChevronLeft, MessageSquare, RefreshCcw, Search, X } from "lucide-react";
+
+const ALL_STATUSES = ["ok", "degraded", "unavailable", "error"] as const;
+type StatusKey = (typeof ALL_STATUSES)[number];
 
 const EventsSearch = z.object({
   from: z.string(),
