@@ -4,9 +4,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { createThread, deleteThread, getThread, listThreads, saveMessage, updateThread } from "@/lib/threads.functions";
-import { getTelemetry } from "@/lib/telemetry.functions";
+import { getTelemetry, tickTelemetry } from "@/lib/telemetry.functions";
 import { getObservabilitySummary } from "@/lib/observability.functions";
-import { ROLES, STADIUMS, LANGUAGES, type RoleId, type LanguageId } from "@/lib/stadspear";
+import { getSessionReport } from "@/lib/session-report.functions";
+import { ROLES, STADIUMS, LANGUAGES, evaluateMetric, type RoleId, type LanguageId, type Severity } from "@/lib/stadspear";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +21,7 @@ import { toast } from "sonner";
 import mark from "@/assets/stadspear-mark.png";
 import {
   Plus, Star, Trash2, Send, Loader2, LogOut, Radio, Users, Bus, Accessibility, Leaf, Activity,
-  Menu, ChevronRight, ThumbsUp, ThumbsDown, Shield, Sparkles,
+  Menu, ChevronRight, ThumbsUp, ThumbsDown, Shield, Sparkles, AlertTriangle, FileText,
 } from "lucide-react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
