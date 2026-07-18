@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDashboardData } from "@/lib/hooks/useDashboardData";
 import type { ToolFallbackRow } from "@/lib/dashboard.functions";
 import { STADIUMS } from "@/lib/stadspear";
@@ -7,8 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Activity, AlertTriangle, ChevronLeft, Gauge, RefreshCcw, Timer } from "lucide-react";
+
 import {
   Area,
   AreaChart,
