@@ -58,6 +58,7 @@ function fmtTime(iso: string) {
 }
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const [stadium, setStadium] = useState<string>("all");
   const [windowMin, setWindowMin] = useState<number>(60);
 
@@ -65,9 +66,11 @@ function DashboardPage() {
 
   const data = q.data;
   const summary = data?.summary;
+  const isInitialLoading = q.isLoading && !data;
   const isEmpty = !q.isLoading && (data?.summary.totalCalls ?? 0) === 0 && (data?.summary.streamCount ?? 0) === 0;
   const bucketMinutes = data?.bucketMinutes ?? 5;
   const navigate = useNavigate();
+
 
   const openBucket = useCallback(
     (bucketIso: string, opts?: { tool?: string; statuses?: string[] }) => {
