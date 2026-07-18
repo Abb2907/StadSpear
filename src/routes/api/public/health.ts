@@ -48,7 +48,7 @@ export const Route = createFileRoute("/api/public/health")({
               signal: controller.signal,
             });
             clearTimeout(timer);
-            dbOk = res.ok || res.status === 404; // 404 = reachable, path just not exposed
+            dbOk = res.status > 0 && res.status < 500; // reachable, not upstream 5xx
             dbLatencyMs = Date.now() - dbStarted;
           }
         } catch {
