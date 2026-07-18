@@ -314,7 +314,14 @@ function ChatPane({
   return (
     <>
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-6 sm:px-8">
-        <div className="mx-auto max-w-3xl space-y-6">
+        <div
+          className="mx-auto max-w-3xl space-y-6"
+          role="log"
+          aria-live="polite"
+          aria-relevant="additions text"
+          aria-atomic="false"
+          aria-label="StadSpear concierge conversation"
+        >
           {messages.length === 0 && (
             <EmptyState role={role} stadium={stadium} suggestions={suggestions} onPick={(s) => setInput(s)} />
           )}
@@ -322,12 +329,13 @@ function ChatPane({
             <MessageBubble key={m.id} message={m} threadId={threadId} />
           ))}
           {status === "submitted" && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground" aria-live="polite">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="size-3 animate-spin" /> StadSpear is thinking…
             </div>
           )}
         </div>
       </div>
+
       <div className="border-t border-border bg-surface/60 p-3 sm:p-4">
         <form
           onSubmit={(e) => { e.preventDefault(); submit(); }}
@@ -484,16 +492,23 @@ function TelemetryPanel({ stadium }: { stadium: string }) {
     return () => { supabase.removeChannel(channel); };
   }, [stadium, qc]);
 
-  // Simulated live drift: tick the server every 5s so subscribers see fresh values.
+  // Simulated live drift: tick the server every 5s so Realtime subscribers see
+  // fresh values. Pauses when the tab is hidden to prevent server starvation
+  // under high fan-density traffic. Realtime WebSocket subscription above is
+  // the primary push channel; this tick only drives the demo simulator.
   const [streaming, setStreaming] = useState(true);
   useEffect(() => {
     if (!streaming) return;
     let cancelled = false;
-    const tick = () => tickFn({ data: { stadium } }).catch(() => {});
+    const tick = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      tickFn({ data: { stadium } }).catch(() => {});
+    };
     tick();
     const id = setInterval(() => { if (!cancelled) tick(); }, 5000);
     return () => { cancelled = true; clearInterval(id); };
   }, [stadium, streaming, tickFn]);
+
 
   const metrics = q.data?.metrics ?? [];
   const fetchedAt = q.data?.fetched_at;

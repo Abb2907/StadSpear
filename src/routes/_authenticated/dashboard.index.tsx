@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { getStadiumDashboard } from "@/lib/dashboard.functions";
+import { useDashboardData } from "@/lib/hooks/useDashboardData";
+import type { ToolFallbackRow } from "@/lib/dashboard.functions";
 import { STADIUMS } from "@/lib/stadspear";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,23 +55,10 @@ function fmtTime(iso: string) {
 }
 
 function DashboardPage() {
-  const dashFn = useServerFn(getStadiumDashboard);
   const [stadium, setStadium] = useState<string>("all");
   const [windowMin, setWindowMin] = useState<number>(60);
 
-  const q = useQuery({
-    queryKey: ["dashboard", stadium, windowMin],
-    queryFn: () =>
-      dashFn({
-        data: {
-          stadium: stadium === "all" ? undefined : stadium,
-          sinceMinutes: windowMin,
-          bucketMinutes: windowMin >= 240 ? 15 : windowMin >= 60 ? 5 : 1,
-        },
-      }),
-    refetchInterval: 15_000,
-    staleTime: 10_000,
-  });
+  const q = useDashboardData(stadium, windowMin);
 
   const data = q.data;
   const summary = data?.summary;
@@ -322,7 +308,7 @@ function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(data?.fallbackByTool ?? []).map((row) => (
+                    {(data?.fallbackByTool ?? []).map((row: ToolFallbackRow) => (
                       <tr
                         key={row.tool}
                         className="border-t border-border/40 hover:bg-muted/30 cursor-pointer"
