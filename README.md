@@ -127,12 +127,13 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 
 ```bash
 bun install
+cp .env.example .env.local   # fill in values from your Lovable Cloud project
 bun run dev          # start Vite dev server
 bun run test         # 26 unit tests + 10 benchmarks (36 total)
 bun run build        # production build / typecheck
 ```
 
-Environment (auto-provisioned by Lovable Cloud): `LOVABLE_API_KEY`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+Environment variables are auto-provisioned by Lovable Cloud at runtime: `LOVABLE_API_KEY`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`. **Real `.env` files are not committed to the repository.**
 
 ---
 
