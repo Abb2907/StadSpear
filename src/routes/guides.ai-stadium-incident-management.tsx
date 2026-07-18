@@ -5,6 +5,33 @@ const TITLE = "AI-Driven Stadium Incident Management: Cutting Response Latency a
 const DESCRIPTION =
   "A practical guide for venue managers and ops leads on using GenAI and real-time telemetry to detect, triage, and resolve stadium incidents faster during major tournaments like FIFA World Cup 2026.";
 
+const FAQS: { q: string; a: string }[] = [
+  {
+    q: "What is AI-driven stadium incident management?",
+    a: "AI-driven stadium incident management uses generative AI agents and real-time telemetry (crowd density, transit, CCTV analytics, weather) to detect, triage, and resolve venue incidents automatically — reducing time-to-acknowledge and time-to-resolve compared with radio-and-dashboard workflows.",
+  },
+  {
+    q: "How does GenAI reduce incident response latency?",
+    a: "A GenAI agent watches streaming telemetry continuously, correlates signals across sources, and surfaces a recommended action to the right role in the venue's language on the first token — collapsing the detect → decide → dispatch loop from minutes to seconds.",
+  },
+  {
+    q: "How is this different from traditional venue management software?",
+    a: "Traditional venue management software centralizes dashboards for humans to read. AI-driven systems add a reasoning layer with typed tools, graceful degradation, and role-scoped surfaces so volunteers and ops staff act on decisions instead of interpreting charts.",
+  },
+  {
+    q: "What happens when telemetry or routing is unavailable?",
+    a: "Each tool returns an explicit status — ok, degraded, or unavailable. Cached telemetry keeps rendering with a timestamp, and routing falls back to a best-effort walking path with a visible degraded badge, so the ops surface never goes blank during upstream outages.",
+  },
+  {
+    q: "Which metrics matter for stadium incident response?",
+    a: "Track median and p95 tool execution latency, fallback rate, AI stream duration, time-to-acknowledge, time-to-resolve, and volunteer self-serve rate. These signals turn incident review from anecdote into a live operational feedback loop.",
+  },
+  {
+    q: "Is this suitable for FIFA World Cup 2026 venues?",
+    a: "Yes. The architecture is designed for 80,000-seat venues with multilingual crowds and mixed volunteer and ops staff — the same profile as FIFA World Cup 2026 host stadiums — and the patterns generalize to any large-venue event.",
+  },
+];
+
 export const Route = createFileRoute("/guides/ai-stadium-incident-management")({
   component: GuidePage,
   head: () => ({
@@ -48,6 +75,18 @@ export const Route = createFileRoute("/guides/ai-stadium-incident-management")({
             { "@type": "ListItem", position: 2, name: "Guides", item: "https://stadspear.lovable.app/guides/ai-stadium-incident-management" },
             { "@type": "ListItem", position: 3, name: "AI-Driven Stadium Incident Management", item: URL },
           ],
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
         }),
       },
     ],
@@ -154,6 +193,23 @@ function GuidePage() {
             <li><strong>Skipping observability day one.</strong> Without latency and fallback logs you can't tell whether a slow response was the model, the telemetry, or the network.</li>
             <li><strong>Over-scoping RBAC.</strong> Start with three roles (fan, volunteer, ops) and expand only when a real workflow demands it.</li>
           </ul>
+        </section>
+
+        <section className="mt-10 space-y-4" aria-labelledby="faq-heading">
+          <h2 id="faq-heading" className="text-2xl font-semibold">Frequently asked questions</h2>
+          <dl className="divide-y divide-border/60 rounded-lg border border-border/60">
+            {FAQS.map((f) => (
+              <details key={f.q} className="group px-4 py-4">
+                <summary className="cursor-pointer list-none text-base font-medium text-foreground marker:hidden">
+                  <dt className="flex items-center justify-between gap-4">
+                    <span>{f.q}</span>
+                    <span aria-hidden className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
+                  </dt>
+                </summary>
+                <dd className="mt-3 text-muted-foreground">{f.a}</dd>
+              </details>
+            ))}
+          </dl>
         </section>
 
         <section className="mt-10 space-y-4">
