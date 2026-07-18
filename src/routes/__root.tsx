@@ -14,6 +14,12 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import "@/lib/i18n"; // Initialize react-i18next before any component that calls useTranslation.
 
+function getPublicBackendEnvScript() {
+  const backendUrl = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? "";
+  const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? "";
+
+  return `window.process=window.process||{};window.process.env={...(window.process.env||{}),SUPABASE_URL:${JSON.stringify(backendUrl)},SUPABASE_PUBLISHABLE_KEY:${JSON.stringify(publishableKey)}};`;
+}
 
 function NotFoundComponent() {
   return (
@@ -102,7 +108,11 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head><HeadContent /></head>
-      <body>{children}<Scripts /></body>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: getPublicBackendEnvScript() }} />
+        {children}
+        <Scripts />
+      </body>
     </html>
   );
 }
