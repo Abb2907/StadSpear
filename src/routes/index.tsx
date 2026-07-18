@@ -12,6 +12,32 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "StadSpear — FIFA 2026 Operational Control Tower" },
       { name: "description", content: "GenAI-powered stadium ops hub: multilingual concierge, live crowd telemetry, accessibility routing, and real-time decision support for the FIFA World Cup 2026." },
+      { property: "og:title", content: "StadSpear — FIFA 2026 Operational Control Tower" },
+      { property: "og:description", content: "One GenAI control tower for fans, volunteers, and ops staff during FIFA World Cup 2026." },
+      { property: "og:url", content: "https://stadspear.lovable.app/" },
+    ],
+    links: [{ rel: "canonical", href: "https://stadspear.lovable.app/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "StadSpear",
+          url: "https://stadspear.lovable.app/",
+          description: "GenAI-powered FIFA 2026 stadium operational control tower for fans, volunteers, and ops staff.",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "StadSpear",
+          url: "https://stadspear.lovable.app/",
+          description: "StadSpear is a GenAI operational control tower that unifies multilingual concierge, live crowd telemetry, accessibility routing, transit, and sustainability guidance for FIFA World Cup 2026 stadium operations.",
+        }),
+      },
     ],
   }),
 });
