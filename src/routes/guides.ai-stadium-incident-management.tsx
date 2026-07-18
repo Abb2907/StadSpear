@@ -195,6 +195,23 @@ function GuidePage() {
           </ul>
         </section>
 
+        <section className="mt-10 space-y-4" aria-labelledby="faq-heading">
+          <h2 id="faq-heading" className="text-2xl font-semibold">Frequently asked questions</h2>
+          <dl className="divide-y divide-border/60 rounded-lg border border-border/60">
+            {FAQS.map((f) => (
+              <details key={f.q} className="group px-4 py-4">
+                <summary className="cursor-pointer list-none text-base font-medium text-foreground marker:hidden">
+                  <dt className="flex items-center justify-between gap-4">
+                    <span>{f.q}</span>
+                    <span aria-hidden className="text-muted-foreground transition-transform group-open:rotate-45">+</span>
+                  </dt>
+                </summary>
+                <dd className="mt-3 text-muted-foreground">{f.a}</dd>
+              </details>
+            ))}
+          </dl>
+        </section>
+
         <section className="mt-10 space-y-4">
           <h2 className="text-2xl font-semibold">How StadSpear implements this</h2>
           <p>
