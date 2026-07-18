@@ -19,7 +19,7 @@ export default defineMcp({
   title: "StadSpear · FIFA 2026 Ops Concierge",
   version: "0.1.0",
   instructions:
-    "Tools for the StadSpear FIFA World Cup 2026 stadium operations concierge. Use get_stadium_telemetry, get_wayfinding_route, get_transit_options, and get_sustainability_tip for live stadium context. Use list_my_threads and get_thread_messages to read the signed-in user's saved concierge conversations.",
+    "Tools for the StadSpear FIFA World Cup 2026 stadium operations concierge. Use get_stadium_telemetry, get_wayfinding_route, get_transit_options, get_sustainability_tip, and get_crowd_safety_briefing for live stadium context. Use list_my_threads and get_thread_messages to read the signed-in user's saved concierge conversations.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
@@ -29,6 +29,7 @@ export default defineMcp({
     getWayfindingRoute,
     getTransitOptions,
     getSustainabilityTip,
+    getCrowdSafetyBriefing,
     listMyThreads,
     getThreadMessages,
   ],

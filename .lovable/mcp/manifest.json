@@ -127,6 +127,36 @@
         "outputSchema": null
       },
       {
+        "name": "get_crowd_safety_briefing",
+        "title": "Get crowd-safety briefing",
+        "description": "Return a crowd-safety briefing for a stadium zone: density level, choke-point flag, ADA/accessibility guidance, and a recommended operational action. Falls back to a conservative advisory when the live density feed is stale.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "stadium": {
+              "type": "string",
+              "description": "Stadium identifier, e.g. MetLife, SoFi, Azteca."
+            },
+            "zone": {
+              "type": "string",
+              "description": "Zone or gate, e.g. 'Gate B', 'North concourse', 'Section 210'."
+            }
+          },
+          "required": [
+            "stadium",
+            "zone"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
         "name": "list_my_threads",
         "title": "List my StadSpear threads",
         "description": "List the signed-in user's StadSpear concierge conversations, newest first. Returns thread id, title, stadium, match, role, language, favorite flag, and last viewed timestamp.",
