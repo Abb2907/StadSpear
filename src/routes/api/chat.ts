@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/chat")({
           `Current stadium context: ${stadium}.`,
           ROLE_BRIEFS[role],
           "Rules:",
-          "- Use the provided tools to fetch live data when relevant (wayfinding, telemetry, ADA, transit, sustainability).",
+          "- Use the provided tools to fetch live data when relevant (wayfinding, telemetry, transit, sustainability, crowd-safety).",
           "- If a tool returns { degraded: true } or { status: 'unavailable' }, tell the user briefly that live data is temporarily unavailable and offer the best-effort fallback the tool returned.",
           "- Never invent gate numbers, wait times, or transit ETAs. Prefer tool output.",
           "- Format important operational data as short bullet points. Avoid walls of text.",
