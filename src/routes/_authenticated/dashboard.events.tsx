@@ -160,36 +160,99 @@ function EventsDrilldown() {
           <Stat label="Latency avg / p95" value={`${s?.avgLatencyMs ?? 0} / ${s?.p95LatencyMs ?? 0} ms`} />
         </section>
 
-        {search.tool || search.statuses?.length ? (
-          <div className="flex flex-wrap gap-2 text-xs">
-            {search.tool && (
-              <button
-                onClick={() => navigate({ to: "/dashboard/events", search: { ...search, tool: undefined } })}
-                className="rounded-full border border-border/60 px-3 py-1 hover:bg-muted/50"
-              >
-                Clear tool: {search.tool} ✕
-              </button>
-            )}
-            {search.statuses?.length ? (
-              <button
-                onClick={() => navigate({ to: "/dashboard/events", search: { ...search, statuses: undefined } })}
-                className="rounded-full border border-border/60 px-3 py-1 hover:bg-muted/50"
-              >
-                Clear status filter ✕
-              </button>
-            ) : null}
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Filters</div>
+            <div className="text-xs text-muted-foreground tabular-nums">
+              Showing {filteredCount} of {totalCount}
+              {hasClientFilter && (
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setToolFilter("");
+                    setStatusFilter(new Set());
+                  }}
+                  className="ml-3 inline-flex items-center gap-1 rounded-full border border-border/60 px-2 py-0.5 hover:bg-muted/50"
+                >
+                  <X className="h-3 w-3" aria-hidden /> Clear
+                </button>
+              )}
+            </div>
           </div>
-        ) : null}
+          <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search error notes…"
+                className="pl-9"
+                aria-label="Search error notes"
+              />
+            </div>
+            <select
+              value={toolFilter}
+              onChange={(e) => setToolFilter(e.target.value)}
+              aria-label="Filter by tool"
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">All tools</option>
+              {toolOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
+              {ALL_STATUSES.map((k) => {
+                const active = statusFilter.has(k);
+                return (
+                  <button
+                    key={k}
+                    onClick={() => toggleStatus(k)}
+                    aria-pressed={active}
+                    className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
+                      active ? statusTone(k) : "border-border/60 text-muted-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    {k}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {(search.tool || search.statuses?.length) && (
+            <div className="flex flex-wrap gap-2 text-xs pt-1 border-t border-border/40">
+              <span className="text-muted-foreground">From URL:</span>
+              {search.tool && (
+                <button
+                  onClick={() => navigate({ to: "/dashboard/events", search: { ...search, tool: undefined } })}
+                  className="rounded-full border border-border/60 px-3 py-0.5 hover:bg-muted/50"
+                >
+                  Clear tool: {search.tool} ✕
+                </button>
+              )}
+              {search.statuses?.length ? (
+                <button
+                  onClick={() => navigate({ to: "/dashboard/events", search: { ...search, statuses: undefined } })}
+                  className="rounded-full border border-border/60 px-3 py-0.5 hover:bg-muted/50"
+                >
+                  Clear status: {search.statuses.join(", ")} ✕
+                </button>
+              ) : null}
+            </div>
+          )}
+        </Card>
 
         {q.isLoading ? (
           <Card className="p-10 text-center text-sm text-muted-foreground">Loading events…</Card>
-        ) : (data?.groups ?? []).length === 0 ? (
+        ) : filteredGroups.length === 0 ? (
           <Card className="p-10 text-center text-sm text-muted-foreground">
-            No tool executions matched this window. Widen the time range or clear filters.
+            {totalCount === 0
+              ? "No tool executions matched this window. Widen the time range or clear filters."
+              : "No events match the current filters."}
           </Card>
         ) : (
           <div className="space-y-4">
-            {data!.groups.map((g) => (
+            {filteredGroups.map((g) => (
               <Card key={g.threadId ?? "__none__"} className="overflow-hidden">
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 px-4 py-3">
                   <div className="min-w-0">
