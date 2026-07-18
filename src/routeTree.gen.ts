@@ -16,6 +16,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedHubIndexRouteImport } from './routes/_authenticated/hub.index'
 import { Route as AuthenticatedHubThreadIdRouteImport } from './routes/_authenticated/hub.$threadId'
+import { Route as AuthenticatedDashboardEventsRouteImport } from './routes/_authenticated/dashboard.events'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -52,20 +53,28 @@ const AuthenticatedHubThreadIdRoute =
     path: '/hub/$threadId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardEventsRoute =
+  AuthenticatedDashboardEventsRouteImport.update({
+    id: '/events',
+    path: '/events',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/dashboard/events': typeof AuthenticatedDashboardEventsRoute
   '/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
   '/hub/': typeof AuthenticatedHubIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/dashboard/events': typeof AuthenticatedDashboardEventsRoute
   '/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
   '/hub': typeof AuthenticatedHubIndexRoute
 }
@@ -74,8 +83,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
   '/api/chat': typeof ApiChatRoute
+  '/_authenticated/dashboard/events': typeof AuthenticatedDashboardEventsRoute
   '/_authenticated/hub/$threadId': typeof AuthenticatedHubThreadIdRoute
   '/_authenticated/hub/': typeof AuthenticatedHubIndexRoute
 }
@@ -86,10 +96,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/api/chat'
+    | '/dashboard/events'
     | '/hub/$threadId'
     | '/hub/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/api/chat' | '/hub/$threadId' | '/hub'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/api/chat'
+    | '/dashboard/events'
+    | '/hub/$threadId'
+    | '/hub'
   id:
     | '__root__'
     | '/'
@@ -97,6 +115,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/api/chat'
+    | '/_authenticated/dashboard/events'
     | '/_authenticated/hub/$threadId'
     | '/_authenticated/hub/'
   fileRoutesById: FileRoutesById
@@ -159,17 +178,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHubThreadIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/events': {
+      id: '/_authenticated/dashboard/events'
+      path: '/events'
+      fullPath: '/dashboard/events'
+      preLoaderRoute: typeof AuthenticatedDashboardEventsRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
   }
 }
 
+interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardEventsRoute: typeof AuthenticatedDashboardEventsRoute
+}
+
+const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
+  {
+    AuthenticatedDashboardEventsRoute: AuthenticatedDashboardEventsRoute,
+  }
+
+const AuthenticatedDashboardRouteWithChildren =
+  AuthenticatedDashboardRoute._addFileChildren(
+    AuthenticatedDashboardRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
   AuthenticatedHubThreadIdRoute: typeof AuthenticatedHubThreadIdRoute
   AuthenticatedHubIndexRoute: typeof AuthenticatedHubIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
   AuthenticatedHubThreadIdRoute: AuthenticatedHubThreadIdRoute,
   AuthenticatedHubIndexRoute: AuthenticatedHubIndexRoute,
 }
