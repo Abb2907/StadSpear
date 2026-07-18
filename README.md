@@ -2,6 +2,8 @@
 
 > An all-in-one, GenAI-powered operational hub that helps fans, volunteers, and venue staff navigate FIFA World Cup 2026 stadiums with real-time telemetry, multilingual concierge chat, accessibility-first wayfinding, transit and sustainability guidance — with graceful degradation when any live signal drops.
 
+**Live site:** https://stadspear.lovable.app
+
 ---
 
 ## The Problem
