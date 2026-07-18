@@ -40,8 +40,10 @@ function sanitizeScalar(s: string, max = 64) {
     .slice(0, max);
 }
 
-// Verify the caller's authoritative role from Supabase JWT user_metadata.
-// Falls back to "fan" (least privilege) on any failure — never trusts client-declared role for privileged tools.
+// Verify the caller's authoritative role ONLY from admin-issued `app_metadata`.
+// `user_metadata` is intentionally ignored — any signed-in user can write it via
+// `supabase.auth.updateUser({ data: { role: 'ops' } })`, so trusting it lets a
+// fan self-elevate. Falls back to "fan" (least privilege) on any failure.
 async function resolveAuthoritativeRole(bearer: string | null): Promise<"fan" | "volunteer" | "ops"> {
   const supaUrl = process.env.SUPABASE_URL;
   const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY;
@@ -51,11 +53,10 @@ async function resolveAuthoritativeRole(bearer: string | null): Promise<"fan" | 
       headers: { apikey: supaKey, Authorization: bearer },
     });
     if (!res.ok) return "fan";
-    const user = (await res.json()) as { user_metadata?: { role?: string }; app_metadata?: { role?: string; roles?: string[] } };
+    const user = (await res.json()) as { app_metadata?: { role?: string; roles?: string[] } };
     const claimed =
       user.app_metadata?.role ??
-      user.app_metadata?.roles?.[0] ??
-      user.user_metadata?.role;
+      user.app_metadata?.roles?.[0];
     return claimed === "ops" || claimed === "volunteer" ? claimed : "fan";
   } catch {
     return "fan";
