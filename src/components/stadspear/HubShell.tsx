@@ -492,16 +492,23 @@ function TelemetryPanel({ stadium }: { stadium: string }) {
     return () => { supabase.removeChannel(channel); };
   }, [stadium, qc]);
 
-  // Simulated live drift: tick the server every 5s so subscribers see fresh values.
+  // Simulated live drift: tick the server every 5s so Realtime subscribers see
+  // fresh values. Pauses when the tab is hidden to prevent server starvation
+  // under high fan-density traffic. Realtime WebSocket subscription above is
+  // the primary push channel; this tick only drives the demo simulator.
   const [streaming, setStreaming] = useState(true);
   useEffect(() => {
     if (!streaming) return;
     let cancelled = false;
-    const tick = () => tickFn({ data: { stadium } }).catch(() => {});
+    const tick = () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      tickFn({ data: { stadium } }).catch(() => {});
+    };
     tick();
     const id = setInterval(() => { if (!cancelled) tick(); }, 5000);
     return () => { cancelled = true; clearInterval(id); };
   }, [stadium, streaming, tickFn]);
+
 
   const metrics = q.data?.metrics ?? [];
   const fetchedAt = q.data?.fetched_at;
