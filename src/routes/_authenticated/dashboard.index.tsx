@@ -364,6 +364,29 @@ function DashboardPage() {
   );
 }
 
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6" role="status" aria-busy aria-live="polite" aria-label="Loading operational metrics">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="p-4 space-y-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-3 w-28" />
+          </Card>
+        ))}
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <Card className="p-4"><Skeleton className="h-[240px] w-full" /></Card>
+        <Card className="p-4"><Skeleton className="h-[240px] w-full" /></Card>
+      </section>
+      <Card className="p-4"><Skeleton className="h-[220px] w-full" /></Card>
+      <span className="sr-only">Loading operational metrics…</span>
+    </div>
+  );
+}
+
+
 function StatCard({
   icon,
   label,
