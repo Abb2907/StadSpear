@@ -19,15 +19,20 @@ Traditional signage, static apps, and human staff can't scale to that volume. Wh
 
 ## How StadSpear Solves It
 
-StadSpear is a **GenAI-first operational control tower** with three surfaces working in concert:
+StadSpear is a **GenAI-first operational control tower** with four surfaces working in concert:
 
 1. **Multilingual AI Concierge** — A streaming chat assistant powered by tool-calling. Ask anything in any language; it invokes purpose-built tools (`get_stadium_telemetry`, `get_wayfinding_route`, `get_transit_options`, `get_sustainability_tip`) to ground its answer in live data.
 2. **Live Ops Telemetry Tiles** — Crowd density, gate waits, transit ETA, ADA restroom availability, sustainability score. Cached read-through with timestamps so stale data degrades gracefully instead of erroring.
-3. **Observability Dashboard + Drilldown** — Charts real-time tool latency (avg + p95), fallback rates, and stream duration. Click any point to drill into the underlying tool executions grouped by thread, with search and status filters.
+3. **Real-time Streaming + Alert Thresholds** — Supabase Realtime pushes telemetry updates every 5 seconds. Metrics are evaluated against thresholds (`gate_wait`, `concourse_density`, `transit_eta`, `ada_restrooms`, `eco_points`) and surfaced as `ok` / `warn` / `critical` badges with actionable notes.
+4. **Observability Dashboard + Drilldown** — Charts real-time tool latency (avg + p95), fallback rates, and stream duration. Click any point to drill into the underlying tool executions grouped by thread, with search and status filters.
 
 ### Graceful degradation, always
 
 Every chat tool returns a `status`: `ok`, `degraded`, or `unavailable` — so when live routing or telemetry fails, the assistant says *"Live routing is temporarily unavailable — here's a best-effort walking route"* instead of crashing.
+
+### Session report export
+
+Any stadium thread can be exported as a Markdown session report containing messages, tool events, AI gateway runs, feedback, telemetry snapshot, and active alerts.
 
 ### Agent-ready via MCP
 
