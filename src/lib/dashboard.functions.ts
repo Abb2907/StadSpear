@@ -77,14 +77,32 @@ export const getStadiumDashboard = createServerFn({ method: "POST" })
     if (toolsRes.error) throw new Error(toolsRes.error.message);
     if (runsRes.error) throw new Error(runsRes.error.message);
 
-    const allowedThreadIds = new Set((threadsRes.data ?? []).map((t: any) => t.id));
+    const allowedThreadIds = new Set(
+      (threadsRes.data ?? []).map((t: { id: string }) => t.id),
+    );
     // Only filter by stadium when the caller asked; otherwise include null-thread events too.
     const filterByStadium = !!data.stadium;
 
-    const tools = (toolsRes.data ?? []).filter((t: any) =>
+    type ToolEventRow = {
+      tool_name: string;
+      status: string;
+      latency_ms: number | null;
+      error_message: string | null;
+      created_at: string;
+      thread_id: string | null;
+    };
+    type RunRow = {
+      stream_duration_ms: number | null;
+      total_tokens: number | null;
+      status: string;
+      created_at: string;
+      thread_id: string | null;
+    };
+
+    const tools: ToolEventRow[] = (toolsRes.data ?? []).filter((t: ToolEventRow) =>
       filterByStadium ? t.thread_id && allowedThreadIds.has(t.thread_id) : true,
     );
-    const runs = (runsRes.data ?? []).filter((r: any) =>
+    const runs: RunRow[] = (runsRes.data ?? []).filter((r: RunRow) =>
       filterByStadium ? r.thread_id && allowedThreadIds.has(r.thread_id) : true,
     );
 
@@ -162,9 +180,15 @@ export const getStadiumDashboard = createServerFn({ method: "POST" })
       });
 
     const totalCalls = tools.length;
-    const totalFallback = tools.filter((t: any) => t.status !== "ok").length;
-    const allLatencies = tools.map((t: any) => t.latency_ms).filter((n: any) => typeof n === "number").sort((a: number, b: number) => a - b);
-    const allStreams = runs.map((r: any) => r.stream_duration_ms).filter((n: any) => typeof n === "number").sort((a: number, b: number) => a - b);
+    const totalFallback = tools.filter((t) => t.status !== "ok").length;
+    const allLatencies = tools
+      .map((t) => t.latency_ms)
+      .filter((n): n is number => typeof n === "number")
+      .sort((a, b) => a - b);
+    const allStreams = runs
+      .map((r) => r.stream_duration_ms)
+      .filter((n): n is number => typeof n === "number")
+      .sort((a, b) => a - b);
     const summary = {
       totalCalls,
       totalFallback,

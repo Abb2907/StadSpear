@@ -4,6 +4,7 @@ import {
   getWayfindingRoute,
   getTransitOptions,
   getSustainabilityTip,
+  getCrowdSafetyBriefing,
 } from "@/lib/chat-tools";
 
 function mockFetch(response: { ok: boolean; status?: number; body?: unknown }) {
@@ -107,5 +108,40 @@ describe("getSustainabilityTip", () => {
     const res = getSustainabilityTip("SoFi");
     expect(res.status).toBe("ok");
     expect((res as any).tip).toContain("SoFi");
+  });
+});
+
+describe("getCrowdSafetyBriefing", () => {
+  it("returns ok briefing with density, ADA guidance, and recommendedAction", () => {
+    const res = getCrowdSafetyBriefing("MetLife", "Section 218");
+    expect(res.status).toBe("ok");
+    expect((res as any).density).toMatch(/low|moderate|elevated|high/);
+    expect((res as any).adaGuidance).toBeTruthy();
+    expect((res as any).recommendedAction).toBeTruthy();
+    expect(typeof (res as any).chokePoint).toBe("boolean");
+  });
+
+  it("degrades to a conservative advisory when the live feed is stale", () => {
+    // Find any (stadium, zone) whose seed % 9 === 0 by brute force.
+    const stadiums = ["MetLife", "SoFi", "Azteca", "AT&T", "BMO"];
+    let degraded: any = null;
+    outer: for (const s of stadiums) {
+      for (let i = 0; i < 200; i++) {
+        const res = getCrowdSafetyBriefing(s, `Gate ${i}`);
+        if (res.status === "degraded") { degraded = res; break outer; }
+      }
+    }
+    expect(degraded).not.toBeNull();
+    expect(degraded.fallback.adaGuidance).toMatch(/wheelchair|ramp/i);
+    expect(degraded.fallback.recommendedAction).toBeTruthy();
+    expect(degraded.note).toMatch(/stale|conservative/i);
+  });
+
+  it("flags chokePoint on elevated/high density", () => {
+    // Sample many zones — at least one should be a choke point.
+    const flagged = Array.from({ length: 30 }, (_, i) =>
+      getCrowdSafetyBriefing("SoFi", `Zone ${i}`),
+    ).some((r) => (r as any).chokePoint === true);
+    expect(flagged).toBe(true);
   });
 });

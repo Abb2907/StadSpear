@@ -49,7 +49,7 @@ export const Route = createFileRoute("/api/chat")({
           `Current stadium context: ${stadium}.`,
           ROLE_BRIEFS[role],
           "Rules:",
-          "- Use the provided tools to fetch live data when relevant (wayfinding, telemetry, ADA, transit, sustainability).",
+          "- Use the provided tools to fetch live data when relevant (wayfinding, telemetry, transit, sustainability, crowd-safety).",
           "- If a tool returns { degraded: true } or { status: 'unavailable' }, tell the user briefly that live data is temporarily unavailable and offer the best-effort fallback the tool returned.",
           "- Never invent gate numbers, wait times, or transit ETAs. Prefer tool output.",
           "- Format important operational data as short bullet points. Avoid walls of text.",
@@ -131,6 +131,18 @@ export const Route = createFileRoute("/api/chat")({
             description: "Return an actionable sustainability tip tailored to the current stadium (recycling, hydration stations, low-impact transit).",
             inputSchema: z.object({ stadium: z.string() }),
             execute: instrument("getSustainabilityTip", ({ stadium: s }: { stadium: string }) => chatTools.getSustainabilityTip(s)),
+          }),
+          getCrowdSafetyBriefing: tool({
+            description: "Return a crowd-safety briefing for a stadium zone: density level, choke-point flag, ADA guidance, and a recommended operational action. Use this for volunteer/ops requests about crowding, safety, entry metering, or accessibility routing.",
+            inputSchema: z.object({
+              stadium: z.string().describe("Stadium id, e.g. MetLife, SoFi, Azteca"),
+              zone: z.string().describe("Zone or gate, e.g. 'Gate B', 'North concourse', 'Section 210'"),
+            }),
+            execute: instrument(
+              "getCrowdSafetyBriefing",
+              ({ stadium: s, zone }: { stadium: string; zone: string }) =>
+                chatTools.getCrowdSafetyBriefing(s, zone),
+            ),
           }),
         };
 
