@@ -108,7 +108,7 @@ export const Route = createFileRoute("/api/chat")({
 
 
         // Log a tool execution to tool_events (best-effort — never break UX).
-        const bearer = request.headers.get("authorization");
+        const bearer = bearerHeader;
         const supaUrl = process.env.SUPABASE_URL;
         const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY;
         const logTool = async (
