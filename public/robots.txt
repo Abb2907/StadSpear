@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stadspear.lovable.app/sitemap.xml
