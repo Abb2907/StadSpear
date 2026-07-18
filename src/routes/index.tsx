@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/browser-client";
 import { Button } from "@/components/ui/button";
 import { Shield, Radio, Languages, Accessibility, Bus, Leaf, LineChart, ArrowRight } from "lucide-react";
 import heroStadium from "@/assets/hero-stadium.jpg";
