@@ -1,6 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { logger } from "@/lib/logger";
 
+const getBackendConfig = () => ({
+  url: process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL,
+  publishableKey:
+    process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+});
+
 /**
  * Public health-check endpoint.
  *
@@ -23,11 +29,11 @@ export const Route = createFileRoute("/api/public/health")({
         // 1. Runtime check — verifies the Worker responded at all.
         const runtimeOk = true;
 
-        // 2. Env check — required public config for the SSR shell.
-        const envOk = Boolean(
-          process.env.VITE_SUPABASE_URL &&
-            process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        );
+        // 2. Env check — required backend config for server routes. In
+        // production these are exposed as SUPABASE_*; VITE_* remains as a
+        // local/CI fallback for preview builds.
+        const { url, publishableKey } = getBackendConfig();
+        const envOk = Boolean(url && publishableKey);
 
         // 3. Database check — a shallow HEAD request against the Data API,
         // using the publishable key so RLS still applies and no privileged
@@ -37,14 +43,12 @@ export const Route = createFileRoute("/api/public/health")({
         let dbLatencyMs: number | null = null;
         const dbStarted = Date.now();
         try {
-          const url = process.env.VITE_SUPABASE_URL;
-          const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-          if (url && key) {
+          if (url && publishableKey) {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 2500);
             const res = await fetch(`${url}/rest/v1/`, {
               method: "GET",
-              headers: { apikey: key, Authorization: `Bearer ${key}` },
+              headers: { apikey: publishableKey },
               signal: controller.signal,
             });
             clearTimeout(timer);
