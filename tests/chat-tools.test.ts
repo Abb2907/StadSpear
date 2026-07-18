@@ -113,7 +113,7 @@ describe("getSustainabilityTip", () => {
 
 describe("getCrowdSafetyBriefing", () => {
   it("returns ok briefing with density, ADA guidance, and recommendedAction", () => {
-    const res = getCrowdSafetyBriefing("MetLife", "Gate A");
+    const res = getCrowdSafetyBriefing("MetLife", "Section 218");
     expect(res.status).toBe("ok");
     expect((res as any).density).toMatch(/low|moderate|elevated|high/);
     expect((res as any).adaGuidance).toBeTruthy();
