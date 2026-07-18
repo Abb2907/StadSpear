@@ -111,14 +111,14 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 | Criterion | Where it lives |
 | --- | --- |
 | **Problem-statement alignment** | Every FIFA-2026 pillar (navigation, crowd, accessibility, transit, sustainability, multilingual, ops intelligence, real-time decision support) maps to a first-class feature. |
-| **Frontend** | TanStack routes for landing, auth, hub, dashboard, drilldown; WCAG-AA color pairs; ARIA + live regions on AI streams. |
-| **Backend** | Server functions with Zod input validators; RLS on every table; instrumented tool wrapper. |
+| **Frontend** | TanStack routes for landing, auth, hub, dashboard, drilldown, and incident-management guide; WCAG-AA color pairs; ARIA + live regions on AI streams. |
+| **Backend** | Server functions with Zod input validators; RLS on every table; instrumented tool wrapper; realtime telemetry tick. |
 | **Security** | Supabase RLS scoped by `auth.uid()`, Zod validation, no secrets in the client, MCP tokens verified against Supabase issuer, GRANTs limited to `authenticated` + `service_role`. |
 | **Accessibility** | Semantic HTML, keyboard-first controls, live-region streaming updates, ADA restroom telemetry surfaced in the tool. |
 | **Code Quality** | Strict TS, small focused components, service-layer extraction (`chat-tools.ts`, `thread-service.ts`) for testability. |
-| **Efficiency** | Streamed responses, TanStack Query cache, telemetry read-through cache, parallel tool fan-out. |
-| **Testing** | 26 Vitest unit tests covering fallbacks + service logic; 10 benchmarks (p95 latency under simulated slowdowns). |
-| **Observability** | `tool_events`, `ai_gateway_runs`, `feedback` tables + a live charting dashboard + drilldown with filters. |
+| **Efficiency** | Streamed responses, TanStack Query cache, telemetry read-through cache, parallel tool fan-out, realtime delta updates. |
+| **Testing** | 36 Vitest unit tests covering fallbacks + service logic; 12 benchmarks (p95 latency under simulated slowdowns). |
+| **Observability** | `tool_events`, `ai_gateway_runs`, `feedback` tables + a live charting dashboard + drilldown with filters + session report export. |
 
 ---
 
