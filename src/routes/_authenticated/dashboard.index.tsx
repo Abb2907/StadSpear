@@ -239,7 +239,7 @@ function DashboardPage() {
               >
                 <ChartContainer config={chartConfig} className="h-64 w-full">
                   <ResponsiveContainer>
-                    <AreaChart data={data?.toolLatency ?? []}>
+                    <AreaChart data={data?.toolLatency ?? []} onClick={chartClick((b) => openBucket(b, { statuses: ["degraded", "unavailable", "error"] }))} style={{ cursor: "pointer" }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
                       <XAxis dataKey="bucket" tickFormatter={fmtTime} className="text-xs" />
                       <YAxis domain={[0, 1]} tickFormatter={(v) => `${Math.round(Number(v) * 100)}%`} className="text-xs" />
