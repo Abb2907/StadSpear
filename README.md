@@ -44,23 +44,23 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 
 ```text
                              ┌───────────────────────────────────────┐
-                             │             Fans · Volunteers · Ops   │
+                             │         Fans · Volunteers · Ops       │
                              └──────────────────┬────────────────────┘
                                                 │
                     ┌───────────────────────────┴───────────────────────────┐
                     │                                                       │
        ┌────────────▼──────────────┐                        ┌───────────────▼──────────────┐
-        │   TanStack Start (React)  │                        │   External AI Clients        │
-        │   /hub · /dashboard       │◀──streaming SSE────┐   │   ChatGPT · Claude · Codex   │
-        │   /dashboard/events       │                    │   └───────────────┬──────────────┘
-        │   /guides/...             │                    │
-       └────────────┬──────────────┘                    │                   │
-                    │                                    │      OAuth 2.1 + Bearer JWT
-      TanStack Query│ createServerFn (RPC)               │                   │
-                    │                                    │        ┌──────────▼──────────┐
-       ┌────────────▼──────────────┐                     │        │  /mcp  (MCP Server) │
-       │   Server Functions +      │                     │        │  6 tools · RLS      │
-       │   /api/chat (AI SDK)      │─── streamText ──────┘        └──────────┬──────────┘
+       │   TanStack Start (React)  │                        │   External AI Clients      │
+       │   /hub  /dashboard        │◀──streaming SSE────┐   │   ChatGPT · Claude · Codex │
+       │   /dashboard/events       │                    │   └───────────────┬──────────────┘
+       │   /guides/...             │                    │                   │
+       └────────────┬──────────────┘                    │      OAuth 2.1 + Bearer JWT
+                    │                                    │                   │
+      TanStack Query│ createServerFn (RPC)               │        ┌──────────▼──────────┐
+                    │                                    │        │  /mcp  (MCP Server) │
+       ┌────────────▼──────────────┐                     │        │  6 tools · RLS      │
+       │   Server Functions +      │                     │        └──────────┬──────────┘
+       │   /api/chat (AI SDK)      │─── streamText ──────┘                   │
        │   Tools: telemetry,       │                                         │
        │   wayfinding, transit,    │                                         │
        │   sustainability          │                                         │
@@ -68,7 +68,7 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
              │              │                                                │
    ┌─────────▼─────────┐   ┌▼──────────────────────┐               ┌─────────▼─────────┐
    │ Lovable AI Gateway│   │  Lovable Cloud (PG)   │◀──────────────┤  Supabase Auth    │
-   │  Gemini 3.5 Flash │   │  threads · messages   │   RLS + JWT   │  Google + Email   │
+   │  Gemini 2.5 Flash │   │  threads · messages   │   RLS + JWT   │  Google + Email   │
    └───────────────────┘   │  telemetry_cache      │               └───────────────────┘
                            │  tool_events          │
                            │  ai_gateway_runs      │
