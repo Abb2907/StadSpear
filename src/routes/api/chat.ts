@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { convertToModelMessages, streamText, tool, stepCountIs, type UIMessage } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway.server";
+import * as chatTools from "@/lib/chat-tools";
 
 type ChatBody = {
   messages?: UIMessage[];
@@ -63,25 +64,7 @@ export const Route = createFileRoute("/api/chat")({
             inputSchema: z.object({
               stadium: z.string().describe("Stadium id, e.g. MetLife, SoFi, Azteca"),
             }),
-            execute: async ({ stadium: s }) => {
-              try {
-                const supaUrl = process.env.SUPABASE_URL;
-                const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-                if (!supaUrl || !supaKey) throw new Error("no-env");
-                const res = await fetch(
-                  `${supaUrl}/rest/v1/telemetry_cache?stadium=eq.${encodeURIComponent(s)}&select=metric,value,generated_at`,
-                  { headers: { apikey: supaKey, Authorization: `Bearer ${supaKey}` } },
-                );
-                if (!res.ok) throw new Error(`status ${res.status}`);
-                const rows = (await res.json()) as Array<{ metric: string; value: unknown; generated_at: string }>;
-                if (rows.length === 0) {
-                  return { status: "degraded", note: "No telemetry cached — showing best-effort static defaults.", fallback: { gate_wait: "≈15 min", concourse_density: "medium" } };
-                }
-                return { status: "ok", stadium: s, metrics: rows };
-              } catch (e) {
-                return { status: "unavailable", note: "Telemetry service unreachable. Best-effort: expect ≈15 min gate wait and medium concourse density in the hour before kickoff.", error: String(e) };
-              }
-            },
+            execute: async ({ stadium: s }) => chatTools.getStadiumTelemetry(s),
           }),
           getWayfindingRoute: tool({
             description: "Compute a walking route inside the stadium from one landmark (gate/section/amenity) to another.",
@@ -89,54 +72,17 @@ export const Route = createFileRoute("/api/chat")({
               from: z.string().describe("Origin, e.g. 'Gate A', 'Section 112', 'Main entrance'"),
               to: z.string().describe("Destination, e.g. 'Section 218', 'ADA restroom', 'Team store'"),
             }),
-            execute: async ({ from, to }) => {
-              // Simulated route service. In production, plug in Mapbox/HERE indoor routing.
-              const seed = (from + to).length;
-              if (seed % 7 === 0) {
-                return {
-                  status: "degraded",
-                  note: "Live indoor routing is temporarily unavailable. Here's a best-effort walking guide.",
-                  fallback: {
-                    from, to,
-                    steps: ["Head to the nearest concourse", "Follow the ring counter-clockwise", "Look for wayfinding signage to your destination"],
-                    estMinutes: 6,
-                  },
-                };
-              }
-              return {
-                status: "ok",
-                from, to,
-                estMinutes: 4 + (seed % 5),
-                accessible: true,
-                steps: [
-                  `Exit ${from} to the main concourse`,
-                  "Turn right, keep the field on your left",
-                  "Continue past the food court",
-                  `Arrive at ${to} — look for the illuminated signage`,
-                ],
-              };
-            },
+            execute: async ({ from, to }) => chatTools.getWayfindingRoute(from, to),
           }),
           getTransitOptions: tool({
             description: "Return public transit options departing near the stadium, with next-departure ETA and accessibility.",
             inputSchema: z.object({ stadium: z.string(), toward: z.string().describe("Destination area or neighborhood") }),
-            execute: async ({ stadium: s, toward }) => ({
-              status: "ok",
-              stadium: s, toward,
-              options: [
-                { mode: "rail", line: s === "MetLife" ? "NJ Transit" : "Metro K", eta: "9 min", accessible: true },
-                { mode: "shuttle", line: "Fan Zone Loop", eta: "4 min", accessible: true },
-                { mode: "rideshare", line: "Lot G pickup", eta: "12 min", accessible: true },
-              ],
-            }),
+            execute: async ({ stadium: s, toward }) => chatTools.getTransitOptions(s, toward),
           }),
           getSustainabilityTip: tool({
             description: "Return an actionable sustainability tip tailored to the current stadium (recycling, hydration stations, low-impact transit).",
             inputSchema: z.object({ stadium: z.string() }),
-            execute: async ({ stadium: s }) => ({
-              status: "ok",
-              tip: `At ${s}, use the marked blue bins on the concourse for recycling and refill at any of the 24 hydration stations. Taking the shuttle back saves ~1.4 kg CO₂ per fan.`,
-            }),
+            execute: async ({ stadium: s }) => chatTools.getSustainabilityTip(s),
           }),
         };
 
