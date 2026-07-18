@@ -118,7 +118,7 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 | **Accessibility** | Semantic HTML, keyboard-first controls, live-region streaming updates, ADA restroom telemetry surfaced in the tool. |
 | **Code Quality** | Strict TS, small focused components, service-layer extraction (`chat-tools.ts`, `thread-service.ts`) for testability. |
 | **Efficiency** | Streamed responses, TanStack Query cache, telemetry read-through cache, parallel tool fan-out, realtime delta updates. |
-| **Testing** | 36 Vitest unit tests covering fallbacks + service logic; 12 benchmarks (p95 latency under simulated slowdowns). |
+| **Testing** | 26 Vitest unit tests covering fallbacks + service logic; 10 benchmarks (p95 latency under simulated slowdowns). |
 | **Observability** | `tool_events`, `ai_gateway_runs`, `feedback` tables + a live charting dashboard + drilldown with filters + session report export. |
 
 ---
