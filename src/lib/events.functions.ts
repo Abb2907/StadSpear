@@ -27,6 +27,29 @@ export type ThreadEventGroup = {
   }[];
 };
 
+interface ToolEventRow {
+  id: string;
+  tool_name: string;
+  status: string;
+  latency_ms: number | null;
+  error_message: string | null;
+  created_at: string;
+  thread_id: string | null;
+}
+
+interface ThreadRow {
+  id: string;
+  title: string | null;
+  stadium: string | null;
+  match: string | null;
+  role: string | null;
+}
+
+/**
+ * Return tool-execution events grouped by thread within a time window,
+ * with latency summary (avg + p95) and fallback rate. RLS-scoped via the
+ * authenticated Supabase client on `context`.
+ */
 export const getThreadEvents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => EventsInput.parse(input))
@@ -42,11 +65,14 @@ export const getThreadEvents = createServerFn({ method: "POST" })
       .limit(data.limit);
     if (data.tool) evQ = evQ.eq("tool_name", data.tool);
     if (data.statuses && data.statuses.length > 0) evQ = evQ.in("status", data.statuses);
-    const { data: events, error } = await evQ;
+    const { data: eventsRaw, error } = await evQ;
     if (error) throw new Error(error.message);
+    const events = (eventsRaw ?? []) as ToolEventRow[];
 
-    const threadIds = Array.from(new Set((events ?? []).map((e: any) => e.thread_id).filter(Boolean)));
-    let threads: any[] = [];
+    const threadIds = Array.from(
+      new Set(events.map((e) => e.thread_id).filter((v): v is string => Boolean(v))),
+    );
+    let threads: ThreadRow[] = [];
     if (threadIds.length > 0) {
       let tQ = supabase
         .from("threads")
@@ -55,14 +81,13 @@ export const getThreadEvents = createServerFn({ method: "POST" })
       if (data.stadium) tQ = tQ.eq("stadium", data.stadium);
       const { data: t, error: tErr } = await tQ;
       if (tErr) throw new Error(tErr.message);
-      threads = t ?? [];
+      threads = (t ?? []) as ThreadRow[];
     }
     const threadMap = new Map(threads.map((t) => [t.id, t]));
 
     const groups = new Map<string, ThreadEventGroup>();
-    for (const ev of events ?? []) {
-      const tid: string | null = ev.thread_id ?? null;
-      // If stadium filter is set, drop events whose thread isn't in the allowed set.
+    for (const ev of events) {
+      const tid = ev.thread_id;
       if (data.stadium && (!tid || !threadMap.has(tid))) continue;
       const key = tid ?? "__none__";
       const t = tid ? threadMap.get(tid) : null;
@@ -89,15 +114,18 @@ export const getThreadEvents = createServerFn({ method: "POST" })
       (a, b) => (b.events[0]?.created_at ?? "").localeCompare(a.events[0]?.created_at ?? ""),
     );
 
-    // Summary
-    const total = (events ?? []).length;
-    const okCount = (events ?? []).filter((e: any) => e.status === "ok").length;
-    const latencies = (events ?? [])
-      .map((e: any) => e.latency_ms)
-      .filter((n: any): n is number => typeof n === "number")
+    const total = events.length;
+    const okCount = events.filter((e) => e.status === "ok").length;
+    const latencies = events
+      .map((e) => e.latency_ms)
+      .filter((n): n is number => typeof n === "number")
       .sort((a, b) => a - b);
-    const avg = latencies.length ? Math.round(latencies.reduce((s, x) => s + x, 0) / latencies.length) : 0;
-    const p95 = latencies.length ? latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * 0.95))] : 0;
+    const avg = latencies.length
+      ? Math.round(latencies.reduce((s, x) => s + x, 0) / latencies.length)
+      : 0;
+    const p95 = latencies.length
+      ? latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * 0.95))]
+      : 0;
 
     return {
       from: data.fromIso,

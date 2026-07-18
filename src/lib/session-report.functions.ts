@@ -3,6 +3,52 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { evaluateMetric } from "./stadspear";
 
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
+interface MessageRow {
+  role: string;
+  parts: unknown;
+  created_at: string;
+}
+interface ToolRow {
+  tool_name: string;
+  status: string;
+  latency_ms: number | null;
+  error_message: string | null;
+  created_at: string;
+}
+interface RunRow {
+  model: string | null;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  total_tokens: number | null;
+  stream_duration_ms: number | null;
+  status: string | null;
+  finish_reason: string | null;
+  created_at: string;
+}
+interface FeedbackRow {
+  rating: "up" | "down" | string;
+  reason: string | null;
+  message_id: string | null;
+  created_at: string;
+}
+interface TelemetryRow {
+  metric: string;
+  value: JsonValue;
+  generated_at: string;
+}
+interface MessagePart {
+  type: string;
+  text?: string;
+}
+
+/**
+ * Generate a downloadable session report for a single thread.
+ * Aggregates messages, tool events, AI-gateway runs, feedback, and
+ * live telemetry (with alert severity) into a plain DTO for the UI.
+ * RLS-scoped: caller must own the thread.
+ */
 export const getSessionReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -27,52 +73,61 @@ export const getSessionReport = createServerFn({ method: "POST" })
       supabase.from("feedback").select("rating, reason, message_id, created_at").eq("thread_id", thread.id).order("created_at"),
       thread.stadium
         ? supabase.from("telemetry_cache").select("metric, value, generated_at").eq("stadium", thread.stadium)
-        : Promise.resolve({ data: [] as any[], error: null } as any),
+        : Promise.resolve({ data: [] as TelemetryRow[], error: null }),
     ]);
 
-    const messages = msgsRes.data ?? [];
-    const tools = toolsRes.data ?? [];
-    const runs = runsRes.data ?? [];
-    const feedback = fbRes.data ?? [];
-    const telemetry = (telRes as any).data ?? [];
+    const messages = (msgsRes.data ?? []) as MessageRow[];
+    const tools = (toolsRes.data ?? []) as ToolRow[];
+    const runs = (runsRes.data ?? []) as RunRow[];
+    const feedback = (fbRes.data ?? []) as FeedbackRow[];
+    const telemetry = ((telRes.data ?? []) as TelemetryRow[]);
 
-    const totalTokens = runs.reduce((a, r: any) => a + (r.total_tokens ?? 0), 0);
+    const totalTokens = runs.reduce((a, r) => a + (r.total_tokens ?? 0), 0);
     const avgStreamMs = runs.length
-      ? Math.round(runs.reduce((a, r: any) => a + (r.stream_duration_ms ?? 0), 0) / runs.length)
+      ? Math.round(runs.reduce((a, r) => a + (r.stream_duration_ms ?? 0), 0) / runs.length)
       : 0;
-    const toolCounts: Record<string, { ok: number; degraded: number; unavailable: number; error: number }> = {};
-    for (const t of tools as any[]) {
+
+    type Bucket = { ok: number; degraded: number; unavailable: number; error: number };
+    const toolCounts: Record<string, Bucket> = {};
+    for (const t of tools) {
       const bucket = (toolCounts[t.tool_name] ||= { ok: 0, degraded: 0, unavailable: 0, error: 0 });
-      const key = (t.status as keyof typeof bucket) in bucket ? (t.status as keyof typeof bucket) : "error";
+      const key = (t.status as keyof Bucket) in bucket ? (t.status as keyof Bucket) : "error";
       bucket[key] += 1;
     }
     const alerts = telemetry
-      .map((m: any) => ({ metric: m.metric, ...evaluateMetric(m.metric, m.value) }))
-      .filter((a: any) => a.severity !== "ok");
+      .map((m) => ({ metric: m.metric, ...evaluateMetric(m.metric, m.value) }))
+      .filter((a) => a.severity !== "ok");
+
+    const extractText = (parts: unknown): string => {
+      if (!Array.isArray(parts)) return String(parts ?? "");
+      return (parts as MessagePart[])
+        .filter((p): p is MessagePart & { text: string } => !!p && typeof p === "object" && p.type === "text" && typeof p.text === "string")
+        .map((p) => p.text)
+        .join("\n")
+        .slice(0, 4000);
+    };
 
     return {
       generatedAt: new Date().toISOString(),
       thread,
       counts: {
         messages: messages.length,
-        userMessages: messages.filter((m: any) => m.role === "user").length,
-        assistantMessages: messages.filter((m: any) => m.role === "assistant").length,
+        userMessages: messages.filter((m) => m.role === "user").length,
+        assistantMessages: messages.filter((m) => m.role === "assistant").length,
         tools: tools.length,
         runs: runs.length,
         feedback: feedback.length,
-        thumbsUp: feedback.filter((f: any) => f.rating === "up").length,
-        thumbsDown: feedback.filter((f: any) => f.rating === "down").length,
+        thumbsUp: feedback.filter((f) => f.rating === "up").length,
+        thumbsDown: feedback.filter((f) => f.rating === "down").length,
       },
       totalTokens,
       avgStreamMs,
       toolBreakdown: toolCounts,
       alerts,
       telemetry,
-      messages: messages.map((m: any) => ({
+      messages: messages.map((m) => ({
         role: m.role,
-        text: Array.isArray(m.parts)
-          ? m.parts.filter((p: any) => p.type === "text").map((p: any) => p.text).join("\n").slice(0, 4000)
-          : String(m.parts ?? ""),
+        text: extractText(m.parts),
         created_at: m.created_at,
       })),
       tools,
