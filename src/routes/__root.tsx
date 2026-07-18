@@ -80,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Multilingual GenAI concierge, live stadium telemetry, and real-time decision support for fans, volunteers, and ops staff." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "google-site-verification", content: "00CZvYkb0ZuMG-i4D7jhS6_xgQzTyFNVUiEZNBzLWTc" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
