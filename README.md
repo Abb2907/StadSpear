@@ -95,12 +95,13 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 | **Styling** | Tailwind CSS v4, semantic design tokens ("Operational Control Tower" dark theme) |
 | **UI Kit** | shadcn/ui, Radix primitives, lucide-react, Recharts |
 | **AI SDK** | Vercel AI SDK (`ai`, `@ai-sdk/react`) with `streamText` + tools + `stopWhen(stepCountIs)` |
-| **Model** | Google Gemini 3.5 Flash via **Lovable AI Gateway** (`ai.gateway.lovable.dev`) |
+| **Model** | Google Gemini 2.5 Flash via **Lovable AI Gateway** (`ai.gateway.lovable.dev`) |
 | **Data Fetching** | TanStack Query (loader `ensureQueryData` + `useSuspenseQuery`) |
 | **Backend** | TanStack `createServerFn` (RPC) + `src/routes/api/*` server routes |
 | **Database & Auth** | Lovable Cloud (Supabase Postgres) with Row-Level Security, Google OAuth + Email |
+| **Realtime** | Supabase Realtime on `telemetry_cache` |
 | **Agent Protocol** | `@lovable.dev/mcp-js` — OAuth 2.1 resource server at `/mcp` |
-| **Testing** | Vitest — 26 unit tests + 10 latency benchmarks |
+| **Testing** | Vitest — 36 unit tests + 12 latency benchmarks |
 | **Typecheck** | `tsgo --noEmit` (strict TypeScript) |
 
 ---
