@@ -102,8 +102,10 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 | **Database & Auth** | Lovable Cloud (Supabase Postgres) with Row-Level Security, Google OAuth + Email |
 | **Realtime** | Supabase Realtime on `telemetry_cache` |
 | **Agent Protocol** | `@lovable.dev/mcp-js` — OAuth 2.1 resource server at `/mcp` |
-| **Testing** | Vitest — 26 unit tests + 10 latency benchmarks (36 total) |
-| **Typecheck** | `tsgo --noEmit` (strict TypeScript) |
+| **i18n** | `react-i18next` — 8 languages (EN, ES, FR, DE, PT, AR, JA, HI) with RTL support |
+| **Testing** | Vitest + jsdom + @testing-library/react — 82 unit/integration tests + 10 perf benchmarks (92 total) |
+| **CI** | GitHub Actions (`.github/workflows/ci.yml`) — lint, typecheck, tests, build on every push |
+| **Typecheck** | `tsgo --noEmit` (strict TypeScript, no `any`) |
 
 ---
 
