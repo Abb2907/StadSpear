@@ -128,8 +128,9 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 ```bash
 bun install
 bun run dev          # start Vite dev server
-bun run test         # 26 unit tests
-bun run test tests/perf.bench.test.ts   # latency benchmarks
+bun run test         # 36 unit tests
+bun run test tests/perf.bench.test.ts   # 12 latency benchmarks
+bun run build        # production build / typecheck
 ```
 
 Environment (auto-provisioned by Lovable Cloud): `LOVABLE_API_KEY`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
