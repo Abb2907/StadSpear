@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createLovableAuth } from "@lovable.dev/cloud-auth-js";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/browser-client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield, Loader2 } from "lucide-react";
 import mark from "@/assets/stadspear-mark.png";
+
+const lovableAuth = createLovableAuth();
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
@@ -74,7 +76,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const redirect_uri = window.location.origin;
-      const result = await lovable.auth.signInWithOAuth("google", { redirect_uri });
+      const result = await lovableAuth.signInWithOAuth("google", { redirect_uri });
       if (result?.error) {
         toast.error(result.error.message ?? "Google sign-in failed");
         setLoading(false);
@@ -83,6 +85,10 @@ function AuthPage() {
       if (result?.redirected) {
         // browser is navigating away
         return;
+      }
+      if (result?.tokens) {
+        const { error } = await supabase.auth.setSession(result.tokens);
+        if (error) throw error;
       }
       // Popup flow succeeded — confirm session and navigate explicitly.
       const { data } = await supabase.auth.getSession();
