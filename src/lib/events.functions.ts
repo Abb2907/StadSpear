@@ -66,7 +66,7 @@ export const getThreadEvents = createServerFn({ method: "POST" })
       if (data.stadium && (!tid || !threadMap.has(tid))) continue;
       const key = tid ?? "__none__";
       const t = tid ? threadMap.get(tid) : null;
-      const g = groups.get(key) ?? {
+      const g: ThreadEventGroup = groups.get(key) ?? {
         threadId: tid,
         threadTitle: t?.title ?? null,
         stadium: t?.stadium ?? null,
