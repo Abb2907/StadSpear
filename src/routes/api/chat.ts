@@ -239,7 +239,7 @@ export const Route = createFileRoute("/api/chat")({
         });
 
         return result.toUIMessageStreamResponse({
-          originalMessages: body.messages,
+          originalMessages: body.messages as UIMessage[],
           onError: (err) => {
             const msg = err instanceof Error ? err.message : String(err);
             if (msg.includes("429")) return "The concierge is at capacity. Please retry in a moment.";
