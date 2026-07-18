@@ -58,13 +58,61 @@ export const Route = createFileRoute("/api/chat")({
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-2.5-flash");
 
+        // Log a tool execution to tool_events (best-effort — never break UX).
+        const bearer = request.headers.get("authorization");
+        const supaUrl = process.env.SUPABASE_URL;
+        const supaKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+        const logTool = async (
+          toolName: string,
+          started: number,
+          status: string,
+          errorMessage?: string | null,
+        ) => {
+          if (!bearer || !supaUrl || !supaKey) return;
+          try {
+            await fetch(`${supaUrl}/rest/v1/tool_events`, {
+              method: "POST",
+              headers: {
+                apikey: supaKey,
+                Authorization: bearer,
+                "Content-Type": "application/json",
+                Prefer: "return=minimal",
+              },
+              body: JSON.stringify({
+                thread_id: body.threadId ?? null,
+                tool_name: toolName,
+                status,
+                latency_ms: Date.now() - started,
+                error_message: errorMessage ?? null,
+              }),
+            });
+          } catch { /* observability failure must not break UX */ }
+        };
+
+        const instrument = <TArgs, TResult extends { status?: string; note?: string; error?: string }>(
+          toolName: string,
+          fn: (args: TArgs) => Promise<TResult> | TResult,
+        ) => async (args: TArgs): Promise<TResult> => {
+          const t0 = Date.now();
+          try {
+            const out = await fn(args);
+            const status = (out?.status as string) ?? "ok";
+            const err = status === "ok" ? null : (out?.error ?? out?.note ?? null);
+            void logTool(toolName, t0, status, err);
+            return out;
+          } catch (e) {
+            void logTool(toolName, t0, "error", e instanceof Error ? e.message : String(e));
+            throw e;
+          }
+        };
+
         const tools = {
           getStadiumTelemetry: tool({
             description: "Get current crowd density, gate wait times, transit ETA, ADA restroom availability, and sustainability score for the active stadium.",
             inputSchema: z.object({
               stadium: z.string().describe("Stadium id, e.g. MetLife, SoFi, Azteca"),
             }),
-            execute: async ({ stadium: s }) => chatTools.getStadiumTelemetry(s),
+            execute: instrument("getStadiumTelemetry", ({ stadium: s }: { stadium: string }) => chatTools.getStadiumTelemetry(s)),
           }),
           getWayfindingRoute: tool({
             description: "Compute a walking route inside the stadium from one landmark (gate/section/amenity) to another.",
@@ -72,17 +120,17 @@ export const Route = createFileRoute("/api/chat")({
               from: z.string().describe("Origin, e.g. 'Gate A', 'Section 112', 'Main entrance'"),
               to: z.string().describe("Destination, e.g. 'Section 218', 'ADA restroom', 'Team store'"),
             }),
-            execute: async ({ from, to }) => chatTools.getWayfindingRoute(from, to),
+            execute: instrument("getWayfindingRoute", ({ from, to }: { from: string; to: string }) => chatTools.getWayfindingRoute(from, to)),
           }),
           getTransitOptions: tool({
             description: "Return public transit options departing near the stadium, with next-departure ETA and accessibility.",
             inputSchema: z.object({ stadium: z.string(), toward: z.string().describe("Destination area or neighborhood") }),
-            execute: async ({ stadium: s, toward }) => chatTools.getTransitOptions(s, toward),
+            execute: instrument("getTransitOptions", ({ stadium: s, toward }: { stadium: string; toward: string }) => chatTools.getTransitOptions(s, toward)),
           }),
           getSustainabilityTip: tool({
             description: "Return an actionable sustainability tip tailored to the current stadium (recycling, hydration stations, low-impact transit).",
             inputSchema: z.object({ stadium: z.string() }),
-            execute: async ({ stadium: s }) => chatTools.getSustainabilityTip(s),
+            execute: instrument("getSustainabilityTip", ({ stadium: s }: { stadium: string }) => chatTools.getSustainabilityTip(s)),
           }),
         };
 
