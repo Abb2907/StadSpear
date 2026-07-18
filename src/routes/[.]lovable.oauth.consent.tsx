@@ -15,7 +15,10 @@ type OAuthNs = {
   approveAuthorization: (id: string) => Promise<{ data: OAuthResult | null; error: { message: string } | null }>;
   denyAuthorization: (id: string) => Promise<{ data: OAuthResult | null; error: { message: string } | null }>;
 };
-const oauth = (supabase.auth as unknown as { oauth: OAuthNs }).oauth;
+
+function getOAuthClient(): OAuthNs {
+  return (supabase.auth as unknown as { oauth: OAuthNs }).oauth;
+}
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
@@ -32,7 +35,7 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
   },
   loader: async ({ location }) => {
     const authorizationId = new URLSearchParams(location.search).get("authorization_id")!;
-    const { data, error } = await oauth.getAuthorizationDetails(authorizationId);
+    const { data, error } = await getOAuthClient().getAuthorizationDetails(authorizationId);
     if (error) throw new Error(error.message);
     const immediate = data?.redirect_url ?? data?.redirect_to;
     if (immediate && !data?.client) throw redirect({ href: immediate });
@@ -58,6 +61,7 @@ function Consent() {
   async function decide(approve: boolean) {
     setBusy(true);
     setError(null);
+    const oauth = getOAuthClient();
     const { data, error } = approve
       ? await oauth.approveAuthorization(authorization_id)
       : await oauth.denyAuthorization(authorization_id);
