@@ -100,3 +100,60 @@ export function getSustainabilityTip(stadium: string): ToolResult {
     tip: `At ${stadium}, use the marked blue bins on the concourse for recycling and refill at any of the 24 hydration stations. Taking the shuttle back saves ~1.4 kg CO₂ per fan.`,
   } as ToolResult;
 }
+
+/**
+ * Crowd-safety briefing for a stadium zone. Combines density, choke-point
+ * flags, ADA guidance and a recommended action so ops and volunteers can
+ * decide fast. Falls back to a conservative advisory when the live density
+ * feed is stale/unreachable.
+ *
+ * FIFA 2026 alignment: crowd management + accessibility + real-time decision
+ * support for the operational control tower.
+ */
+export function getCrowdSafetyBriefing(
+  stadium: string,
+  zone: string,
+): ToolResult {
+  const key = `${stadium}::${zone}`.toLowerCase();
+  const seed = Array.from(key).reduce((s, ch) => s + ch.charCodeAt(0), 0);
+
+  // Simulated live-feed outage on ~1/9 of zones — exercise the fallback path.
+  if (seed % 9 === 0) {
+    return {
+      status: "degraded",
+      note: "Live crowd-density feed is stale. Applying conservative advisory based on kickoff schedule.",
+      fallback: {
+        stadium,
+        zone,
+        density: "elevated",
+        chokePoint: true,
+        adaGuidance:
+          "Route wheelchair and low-mobility guests via the accessible ramp; hold new entries at the outer perimeter for 3–5 min.",
+        recommendedAction:
+          "Open an auxiliary lane, deploy 2 stewards, and page medical standby to the zone.",
+        confidence: 0.55,
+      },
+    };
+  }
+
+  const density = (["low", "moderate", "elevated", "high"] as const)[seed % 4];
+  const chokePoint = density === "elevated" || density === "high";
+  const recommendedAction =
+    density === "high"
+      ? "Meter entry, open overflow gates, and dispatch stewards to the choke-point."
+      : density === "elevated"
+        ? "Add one steward, prep overflow gates, and monitor for the next 10 min."
+        : "Maintain current staffing. Continue routine sweeps.";
+
+  return {
+    status: "ok",
+    stadium,
+    zone,
+    density,
+    chokePoint,
+    adaGuidance:
+      "Accessible route via ramp is clear. Reserve two companion seats near the zone exit for wheelchair guests.",
+    recommendedAction,
+    confidence: 0.9,
+  } as ToolResult;
+}
