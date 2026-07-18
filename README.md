@@ -128,8 +128,7 @@ StadSpear exposes its tools as an **OAuth 2.1-protected MCP server** at `/mcp` s
 ```bash
 bun install
 bun run dev          # start Vite dev server
-bun run test         # 36 unit tests
-bun run test tests/perf.bench.test.ts   # 12 latency benchmarks
+bun run test         # 26 unit tests + 10 benchmarks (36 total)
 bun run build        # production build / typecheck
 ```
 
