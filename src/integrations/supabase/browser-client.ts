@@ -79,3 +79,13 @@ export function getBrowserSupabase(): SupabaseClient<Database> {
   });
   return _client;
 }
+
+// Drop-in replacement for the auto-generated `supabase` export. Same lazy
+// Proxy pattern — nothing is constructed until first property access, so
+// SSR-time imports don't touch `window`.
+export const supabase = new Proxy({} as SupabaseClient<Database>, {
+  get(_t, prop, receiver) {
+    return Reflect.get(getBrowserSupabase(), prop, receiver);
+  },
+});
+
