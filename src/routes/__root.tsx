@@ -12,6 +12,8 @@ import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import "@/lib/i18n"; // Initialize react-i18next before any component that calls useTranslation.
+
 
 function NotFoundComponent() {
   return (

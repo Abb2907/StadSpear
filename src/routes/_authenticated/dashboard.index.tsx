@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDashboardData } from "@/lib/hooks/useDashboardData";
 import type { ToolFallbackRow } from "@/lib/dashboard.functions";
 import { STADIUMS } from "@/lib/stadspear";
@@ -7,8 +8,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Activity, AlertTriangle, ChevronLeft, Gauge, RefreshCcw, Timer } from "lucide-react";
+
 import {
   Area,
   AreaChart,
@@ -55,6 +58,7 @@ function fmtTime(iso: string) {
 }
 
 function DashboardPage() {
+  const { t } = useTranslation();
   const [stadium, setStadium] = useState<string>("all");
   const [windowMin, setWindowMin] = useState<number>(60);
 
@@ -62,9 +66,11 @@ function DashboardPage() {
 
   const data = q.data;
   const summary = data?.summary;
+  const isInitialLoading = q.isLoading && !data;
   const isEmpty = !q.isLoading && (data?.summary.totalCalls ?? 0) === 0 && (data?.summary.streamCount ?? 0) === 0;
   const bucketMinutes = data?.bucketMinutes ?? 5;
   const navigate = useNavigate();
+
 
   const openBucket = useCallback(
     (bucketIso: string, opts?: { tool?: string; statuses?: string[] }) => {
@@ -109,13 +115,11 @@ function DashboardPage() {
           <div className="flex items-center gap-3">
             <Link to="/hub" className="text-muted-foreground hover:text-foreground">
               <ChevronLeft className="h-4 w-4" aria-hidden />
-              <span className="sr-only">Back to hub</span>
+              <span className="sr-only">{t("common.backToHub")}</span>
             </Link>
             <div>
-              <h1 className="text-lg font-semibold tracking-tight">Live ops dashboard</h1>
-              <p className="text-xs text-muted-foreground">
-                Real-time AI tool latency, fallback rates, and stream duration across stadium threads.
-              </p>
+              <h1 className="text-lg font-semibold tracking-tight">{t("dashboard.title")}</h1>
+              <p className="text-xs text-muted-foreground">{t("dashboard.subtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -124,13 +128,13 @@ function DashboardPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All stadiums</SelectItem>
+                <SelectItem value="all">{t("dashboard.allStadiums")}</SelectItem>
                 {STADIUMS.map((s) => (
                   <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <div className="flex rounded-md border border-border/60 bg-card/40 p-0.5" role="tablist" aria-label="Time window">
+            <div className="flex rounded-md border border-border/60 bg-card/40 p-0.5" role="tablist" aria-label={t("dashboard.windowLabel")}>
               {WINDOWS.map((w) => (
                 <button
                   key={w.m}
@@ -152,7 +156,7 @@ function DashboardPage() {
               size="icon"
               onClick={() => q.refetch()}
               disabled={q.isFetching}
-              aria-label="Refresh"
+              aria-label={t("common.refresh")}
             >
               <RefreshCcw className={`h-4 w-4 ${q.isFetching ? "animate-spin" : ""}`} aria-hidden />
             </Button>
@@ -162,8 +166,15 @@ function DashboardPage() {
 
       <main className="mx-auto max-w-7xl px-6 py-6 space-y-6">
         <div aria-live="polite" className="sr-only">
-          {q.isFetching ? "Refreshing metrics" : `Metrics updated at ${new Date().toLocaleTimeString()}`}
+          {q.isFetching
+            ? t("dashboard.refreshingMetrics")
+            : t("dashboard.metricsUpdatedAt", { time: new Date().toLocaleTimeString() })}
         </div>
+
+        {isInitialLoading && <DashboardSkeleton />}
+        {!isInitialLoading && (
+        <>
+
 
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
@@ -345,10 +356,36 @@ function DashboardPage() {
             </Card>
           </>
         )}
+        </>
+        )}
       </main>
+
     </div>
   );
 }
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6" role="status" aria-busy aria-live="polite" aria-label="Loading operational metrics">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="p-4 space-y-3">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-3 w-28" />
+          </Card>
+        ))}
+      </section>
+      <section className="grid gap-4 md:grid-cols-2">
+        <Card className="p-4"><Skeleton className="h-[240px] w-full" /></Card>
+        <Card className="p-4"><Skeleton className="h-[240px] w-full" /></Card>
+      </section>
+      <Card className="p-4"><Skeleton className="h-[220px] w-full" /></Card>
+      <span className="sr-only">Loading operational metrics…</span>
+    </div>
+  );
+}
+
 
 function StatCard({
   icon,
