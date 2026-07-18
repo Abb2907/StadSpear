@@ -12,34 +12,45 @@ import mark from "@/assets/stadspear-mark.png";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" && s.next.startsWith("/") && !s.next.startsWith("//") ? s.next : "",
+  }),
   head: () => ({ meta: [{ title: "Sign in · StadSpear" }] }),
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const go = () => {
+    if (next) window.location.href = next;
+    else navigate({ to: "/hub" });
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/hub" });
+      if (data.session) go();
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") navigate({ to: "/hub" });
+      if (event === "SIGNED_IN") go();
     });
     return () => sub.subscription.unsubscribe();
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [next]);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     try {
       const fn = mode === "signin" ? supabase.auth.signInWithPassword : supabase.auth.signUp;
+      const returnTo = next ? `${window.location.origin}${next}` : window.location.origin;
       const { error } = await fn.call(supabase.auth, {
         email, password,
-        ...(mode === "signup" ? { options: { emailRedirectTo: window.location.origin } } : {}),
+        ...(mode === "signup" ? { options: { emailRedirectTo: returnTo } } : {}),
       } as any);
       if (error) throw error;
       if (mode === "signup") toast.success("Account created. Check your inbox to confirm, then sign in.");
@@ -50,7 +61,8 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    const redirect_uri = next ? `${window.location.origin}${next}` : window.location.origin;
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri });
     if (result.error) { toast.error(result.error.message ?? "Google sign-in failed"); setLoading(false); }
   }
 
